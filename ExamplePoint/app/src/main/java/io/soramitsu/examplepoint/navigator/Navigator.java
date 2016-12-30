@@ -21,8 +21,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.support.annotation.NonNull;
 
-import io.soramitsu.iroha.view.activity.AccountRegisterActivity;
-import io.soramitsu.iroha.view.activity.MainActivity;
+import io.soramitsu.examplepoint.view.activity.AccountRegisterActivity;
+import io.soramitsu.examplepoint.view.activity.MainActivity;
 import io.soramitsu.irohaandroid.callback.Callback;
 import io.soramitsu.irohaandroid.qr.QRReaderBuilder;
 

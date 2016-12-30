@@ -22,12 +22,14 @@ import android.support.v7.app.AlertDialog;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
 
+import io.soramitsu.examplepoint.databinding.DialogProgressBinding;
+
 public class ProgressDialog {
     private AlertDialog progressDialog;
-    private io.soramitsu.iroha.databinding.DialogProgressBinding dialogProgressBinding;
+    private DialogProgressBinding dialogProgressBinding;
 
     public ProgressDialog(LayoutInflater inflater) {
-        dialogProgressBinding = io.soramitsu.iroha.databinding.DialogProgressBinding.inflate(inflater);
+        dialogProgressBinding = DialogProgressBinding.inflate(inflater);
     }
 
     public void show(Activity activity, String message) {

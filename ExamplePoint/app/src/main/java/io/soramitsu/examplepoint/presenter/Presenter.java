@@ -19,7 +19,7 @@ package io.soramitsu.examplepoint.presenter;
 
 import android.support.annotation.NonNull;
 
-import io.soramitsu.iroha.view.View;
+import io.soramitsu.examplepoint.view.View;
 
 interface Presenter<T extends View> {
     void setView(@NonNull T view);

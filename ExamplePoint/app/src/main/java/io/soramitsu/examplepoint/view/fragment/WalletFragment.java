@@ -29,13 +29,13 @@ import android.widget.Toast;
 
 import java.util.ArrayList;
 
-import io.soramitsu.iroha.R;
-import io.soramitsu.iroha.databinding.FragmentWalletBinding;
-import io.soramitsu.iroha.model.TransactionHistory;
-import io.soramitsu.iroha.presenter.WalletPresenter;
-import io.soramitsu.iroha.view.WalletView;
-import io.soramitsu.iroha.view.activity.MainActivity;
-import io.soramitsu.iroha.view.adapter.TransactionListAdapter;
+import io.soramitsu.examplepoint.R;
+import io.soramitsu.examplepoint.databinding.FragmentWalletBinding;
+import io.soramitsu.examplepoint.model.TransactionHistory;
+import io.soramitsu.examplepoint.presenter.WalletPresenter;
+import io.soramitsu.examplepoint.view.WalletView;
+import io.soramitsu.examplepoint.view.activity.MainActivity;
+import io.soramitsu.examplepoint.view.adapter.TransactionListAdapter;
 import io.soramitsu.irohaandroid.model.KeyPair;
 import io.soramitsu.irohaandroid.model.Transaction;
 

@@ -37,10 +37,11 @@ import java.security.UnrecoverableKeyException;
 
 import javax.crypto.NoSuchPaddingException;
 
-import io.soramitsu.iroha.R;
-import io.soramitsu.iroha.exception.ErrorMessageFactory;
-import io.soramitsu.iroha.navigator.Navigator;
-import io.soramitsu.iroha.view.fragment.AccountRegisterFragment;
+import io.soramitsu.examplepoint.R;
+import io.soramitsu.examplepoint.databinding.ActivityAccountRegisterBinding;
+import io.soramitsu.examplepoint.exception.ErrorMessageFactory;
+import io.soramitsu.examplepoint.navigator.Navigator;
+import io.soramitsu.examplepoint.view.fragment.AccountRegisterFragment;
 import io.soramitsu.irohaandroid.model.Account;
 
 public class AccountRegisterActivity extends AppCompatActivity
@@ -49,7 +50,7 @@ public class AccountRegisterActivity extends AppCompatActivity
 
     private Navigator navigator = Navigator.getInstance();
 
-    private io.soramitsu.iroha.databinding.ActivityAccountRegisterBinding binding;
+    private ActivityAccountRegisterBinding binding;
     private InputMethodManager inputMethodManager;
 
     public static Intent getCallingIntent(Context context) {

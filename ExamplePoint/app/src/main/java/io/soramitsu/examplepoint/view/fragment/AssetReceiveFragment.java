@@ -27,10 +27,11 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
-import io.soramitsu.iroha.R;
-import io.soramitsu.iroha.presenter.AssetReceivePresenter;
-import io.soramitsu.iroha.view.AssetReceiveView;
-import io.soramitsu.iroha.view.activity.MainActivity;
+import io.soramitsu.examplepoint.R;
+import io.soramitsu.examplepoint.databinding.FragmentAssetReceiveBinding;
+import io.soramitsu.examplepoint.presenter.AssetReceivePresenter;
+import io.soramitsu.examplepoint.view.AssetReceiveView;
+import io.soramitsu.examplepoint.view.activity.MainActivity;
 
 public class AssetReceiveFragment extends Fragment implements AssetReceiveView, MainActivity.MainActivityListener {
     public static final String TAG = AssetReceiveFragment.class.getSimpleName();
@@ -39,7 +40,7 @@ public class AssetReceiveFragment extends Fragment implements AssetReceiveView, 
 
     private AssetReceivePresenter assetReceivePresenter = new AssetReceivePresenter();
 
-    private io.soramitsu.iroha.databinding.FragmentAssetReceiveBinding binding;
+    private FragmentAssetReceiveBinding binding;
 
     private String hasAssetValue;
 

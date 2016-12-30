@@ -22,9 +22,9 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 
-import io.soramitsu.iroha.R;
-import io.soramitsu.iroha.navigator.Navigator;
-import io.soramitsu.iroha.view.fragment.SplashFragment;
+import io.soramitsu.examplepoint.R;
+import io.soramitsu.examplepoint.navigator.Navigator;
+import io.soramitsu.examplepoint.view.fragment.SplashFragment;
 import io.soramitsu.irohaandroid.model.Account;
 
 public class SplashActivity extends AppCompatActivity {

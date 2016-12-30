@@ -55,13 +55,13 @@ import java.security.UnrecoverableKeyException;
 
 import javax.crypto.NoSuchPaddingException;
 
-import io.soramitsu.iroha.R;
-import io.soramitsu.iroha.databinding.ActivityMainBinding;
-import io.soramitsu.iroha.exception.ErrorMessageFactory;
-import io.soramitsu.iroha.navigator.Navigator;
-import io.soramitsu.iroha.view.fragment.AssetReceiveFragment;
-import io.soramitsu.iroha.view.fragment.AssetSenderFragment;
-import io.soramitsu.iroha.view.fragment.WalletFragment;
+import io.soramitsu.examplepoint.R;
+import io.soramitsu.examplepoint.databinding.ActivityMainBinding;
+import io.soramitsu.examplepoint.exception.ErrorMessageFactory;
+import io.soramitsu.examplepoint.navigator.Navigator;
+import io.soramitsu.examplepoint.view.fragment.AssetReceiveFragment;
+import io.soramitsu.examplepoint.view.fragment.AssetSenderFragment;
+import io.soramitsu.examplepoint.view.fragment.WalletFragment;
 import io.soramitsu.irohaandroid.model.Account;
 
 public class MainActivity extends AppCompatActivity {

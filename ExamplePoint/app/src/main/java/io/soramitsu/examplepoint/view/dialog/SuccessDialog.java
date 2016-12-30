@@ -23,15 +23,16 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import io.soramitsu.iroha.R;
-import io.soramitsu.iroha.util.AndroidSupportUtil;
+import io.soramitsu.examplepoint.R;
+import io.soramitsu.examplepoint.databinding.DialogBinding;
+import io.soramitsu.examplepoint.util.AndroidSupportUtil;
 
 public class SuccessDialog {
     private AlertDialog dialog;
-    private io.soramitsu.iroha.databinding.DialogBinding dialogSuccessfulBinding;
+    private DialogBinding dialogSuccessfulBinding;
 
     public SuccessDialog(LayoutInflater inflater) {
-        dialogSuccessfulBinding = io.soramitsu.iroha.databinding.DialogBinding.inflate(inflater);
+        dialogSuccessfulBinding = DialogBinding.inflate(inflater);
     }
 
     public void show(Activity activity, String title, String message, View.OnClickListener clickListener) {
@@ -39,9 +40,6 @@ public class SuccessDialog {
             return;
         }
 
-//        dialogSuccessfulBinding.image.setImageDrawable(
-//                AndroidSupportUtil.getDrawable(activity, R.drawable.tibi2)
-//        );
         dialogSuccessfulBinding.title.setText(title);
         dialogSuccessfulBinding.title.setTextColor(
                 AndroidSupportUtil.getColor(activity.getApplicationContext(), R.color.colorAccent)

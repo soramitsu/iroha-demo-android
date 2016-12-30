@@ -19,7 +19,7 @@ package io.soramitsu.examplepoint.view;
 
 import android.app.Activity;
 
-import io.soramitsu.iroha.model.TransactionHistory;
+import io.soramitsu.examplepoint.model.TransactionHistory;
 
 public interface WalletView extends LoadingView {
     Activity getActivity();

@@ -26,7 +26,7 @@ import android.support.v4.app.DialogFragment;
 import android.view.ViewGroup;
 import android.view.Window;
 
-import io.soramitsu.iroha.R;
+import io.soramitsu.examplepoint.R;
 
 public class SplashFragment extends DialogFragment {
     public static final String TAG = SplashFragment.class.getSimpleName();

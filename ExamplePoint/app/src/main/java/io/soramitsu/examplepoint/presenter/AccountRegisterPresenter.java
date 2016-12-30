@@ -31,12 +31,12 @@ import java.security.NoSuchAlgorithmException;
 
 import javax.crypto.NoSuchPaddingException;
 
-import io.soramitsu.iroha.R;
-import io.soramitsu.iroha.exception.ErrorMessageFactory;
-import io.soramitsu.iroha.exception.NetworkNotConnectedException;
-import io.soramitsu.iroha.exception.RequiredArgumentException;
-import io.soramitsu.iroha.util.NetworkUtil;
-import io.soramitsu.iroha.view.AccountRegisterView;
+import io.soramitsu.examplepoint.R;
+import io.soramitsu.examplepoint.exception.ErrorMessageFactory;
+import io.soramitsu.examplepoint.exception.NetworkNotConnectedException;
+import io.soramitsu.examplepoint.exception.RequiredArgumentException;
+import io.soramitsu.examplepoint.util.NetworkUtil;
+import io.soramitsu.examplepoint.view.AccountRegisterView;
 import io.soramitsu.irohaandroid.Iroha;
 import io.soramitsu.irohaandroid.callback.Callback;
 import io.soramitsu.irohaandroid.model.Account;

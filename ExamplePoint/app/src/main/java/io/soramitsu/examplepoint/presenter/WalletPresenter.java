@@ -34,12 +34,12 @@ import java.util.List;
 
 import javax.crypto.NoSuchPaddingException;
 
-import io.soramitsu.iroha.exception.ErrorMessageFactory;
-import io.soramitsu.iroha.exception.NetworkNotConnectedException;
-import io.soramitsu.iroha.model.TransactionHistory;
-import io.soramitsu.iroha.util.NetworkUtil;
-import io.soramitsu.iroha.view.WalletView;
-import io.soramitsu.iroha.view.fragment.WalletFragment;
+import io.soramitsu.examplepoint.exception.ErrorMessageFactory;
+import io.soramitsu.examplepoint.exception.NetworkNotConnectedException;
+import io.soramitsu.examplepoint.model.TransactionHistory;
+import io.soramitsu.examplepoint.util.NetworkUtil;
+import io.soramitsu.examplepoint.view.WalletView;
+import io.soramitsu.examplepoint.view.fragment.WalletFragment;
 import io.soramitsu.irohaandroid.Iroha;
 import io.soramitsu.irohaandroid.callback.Callback;
 import io.soramitsu.irohaandroid.callback.Func2;

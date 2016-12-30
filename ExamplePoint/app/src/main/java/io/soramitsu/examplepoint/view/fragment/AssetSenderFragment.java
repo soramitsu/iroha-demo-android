@@ -26,15 +26,15 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import io.soramitsu.iroha.R;
-import io.soramitsu.iroha.databinding.FragmentAssetSenderBinding;
-import io.soramitsu.iroha.navigator.Navigator;
-import io.soramitsu.iroha.presenter.AssetSenderPresenter;
-import io.soramitsu.iroha.view.AssetSenderView;
-import io.soramitsu.iroha.view.activity.MainActivity;
-import io.soramitsu.iroha.view.dialog.ErrorDialog;
-import io.soramitsu.iroha.view.dialog.ProgressDialog;
-import io.soramitsu.iroha.view.dialog.SuccessDialog;
+import io.soramitsu.examplepoint.R;
+import io.soramitsu.examplepoint.databinding.FragmentAssetSenderBinding;
+import io.soramitsu.examplepoint.navigator.Navigator;
+import io.soramitsu.examplepoint.presenter.AssetSenderPresenter;
+import io.soramitsu.examplepoint.view.AssetSenderView;
+import io.soramitsu.examplepoint.view.activity.MainActivity;
+import io.soramitsu.examplepoint.view.dialog.ErrorDialog;
+import io.soramitsu.examplepoint.view.dialog.ProgressDialog;
+import io.soramitsu.examplepoint.view.dialog.SuccessDialog;
 
 public class AssetSenderFragment extends Fragment
         implements AssetSenderView, MainActivity.MainActivityListener {

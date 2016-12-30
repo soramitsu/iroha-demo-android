@@ -36,16 +36,16 @@ import java.security.UnrecoverableKeyException;
 
 import javax.crypto.NoSuchPaddingException;
 
-import io.soramitsu.iroha.R;
-import io.soramitsu.iroha.exception.ErrorMessageFactory;
-import io.soramitsu.iroha.exception.IllegalQRCodeException;
-import io.soramitsu.iroha.exception.NetworkNotConnectedException;
-import io.soramitsu.iroha.exception.ReceiverNotFoundException;
-import io.soramitsu.iroha.exception.SelfSendCanNotException;
-import io.soramitsu.iroha.model.QRType;
-import io.soramitsu.iroha.model.TransferQRParameter;
-import io.soramitsu.iroha.util.NetworkUtil;
-import io.soramitsu.iroha.view.AssetSenderView;
+import io.soramitsu.examplepoint.R;
+import io.soramitsu.examplepoint.exception.ErrorMessageFactory;
+import io.soramitsu.examplepoint.exception.IllegalQRCodeException;
+import io.soramitsu.examplepoint.exception.NetworkNotConnectedException;
+import io.soramitsu.examplepoint.exception.ReceiverNotFoundException;
+import io.soramitsu.examplepoint.exception.SelfSendCanNotException;
+import io.soramitsu.examplepoint.model.QRType;
+import io.soramitsu.examplepoint.model.TransferQRParameter;
+import io.soramitsu.examplepoint.util.NetworkUtil;
+import io.soramitsu.examplepoint.view.AssetSenderView;
 import io.soramitsu.irohaandroid.Iroha;
 import io.soramitsu.irohaandroid.callback.Callback;
 import io.soramitsu.irohaandroid.model.KeyPair;

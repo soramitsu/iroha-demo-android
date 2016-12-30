@@ -21,7 +21,7 @@ import android.content.Context;
 
 import com.google.zxing.WriterException;
 
-import io.soramitsu.iroha.R;
+import io.soramitsu.examplepoint.R;
 import io.soramitsu.irohaandroid.exception.AccountDuplicateException;
 import io.soramitsu.irohaandroid.exception.HttpBadRequestException;
 import io.soramitsu.irohaandroid.exception.UserNotFoundException;

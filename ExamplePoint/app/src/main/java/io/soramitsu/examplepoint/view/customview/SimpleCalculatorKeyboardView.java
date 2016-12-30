@@ -27,12 +27,13 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.GridLayout;
 
-import io.soramitsu.iroha.R;
+import io.soramitsu.examplepoint.R;
+import io.soramitsu.examplepoint.databinding.ViewSimpleCalculatorKeyboardBinding;
 
 public class SimpleCalculatorKeyboardView extends GridLayout {
     public static final String TAG = SimpleCalculatorKeyboardView.class.getSimpleName();
 
-    private io.soramitsu.iroha.databinding.ViewSimpleCalculatorKeyboardBinding binding;
+    private ViewSimpleCalculatorKeyboardBinding binding;
     private EditText targetEditView;
 
     public SimpleCalculatorKeyboardView(Context context) {

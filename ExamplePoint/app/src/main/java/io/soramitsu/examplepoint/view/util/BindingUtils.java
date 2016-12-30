@@ -26,9 +26,9 @@ import android.view.View;
 import android.widget.TextView;
 
 import de.hdodenhof.circleimageview.CircleImageView;
-import io.soramitsu.iroha.R;
-import io.soramitsu.iroha.model.QRType;
-import io.soramitsu.iroha.util.AndroidSupportUtil;
+import io.soramitsu.examplepoint.R;
+import io.soramitsu.examplepoint.model.TransactionHistory;
+import io.soramitsu.examplepoint.util.AndroidSupportUtil;
 import io.soramitsu.irohaandroid.model.Transaction;
 
 @BindingMethods({
@@ -44,7 +44,7 @@ public final class BindingUtils {
 
         final Drawable target;
 
-        if (transaction.isSender(publicKey) && transaction.params.command.equals(QRType.TRANSFER.getType())) {
+        if (transaction.isSender(publicKey) && transaction.params.command.equals(TransactionHistory.TRANSFER)) {
             target = AndroidSupportUtil.getDrawable(c, R.drawable.icon_send);
         } else {
             target = AndroidSupportUtil.getDrawable(c, R.drawable.icon_rec);
@@ -58,7 +58,7 @@ public final class BindingUtils {
         String type;
         String command = transaction.params.command;
 
-        if (transaction.isSender(publicKey) && command.equals(QRType.TRANSFER.getType())) {
+        if (transaction.isSender(publicKey) && command.equals(TransactionHistory.TRANSFER)) {
             type = "to ";
         } else {
             type = "from ";

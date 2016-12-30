@@ -45,10 +45,10 @@ import java.security.UnrecoverableKeyException;
 
 import javax.crypto.NoSuchPaddingException;
 
-import io.soramitsu.iroha.R;
-import io.soramitsu.iroha.exception.ErrorMessageFactory;
-import io.soramitsu.iroha.model.TransferQRParameter;
-import io.soramitsu.iroha.view.AssetReceiveView;
+import io.soramitsu.examplepoint.R;
+import io.soramitsu.examplepoint.exception.ErrorMessageFactory;
+import io.soramitsu.examplepoint.model.TransferQRParameter;
+import io.soramitsu.examplepoint.view.AssetReceiveView;
 import io.soramitsu.irohaandroid.Iroha;
 import io.soramitsu.irohaandroid.callback.Callback;
 import io.soramitsu.irohaandroid.model.Account;
