@@ -32,24 +32,31 @@
 
                 </android.support.design.widget.AppBarLayout>
 
-                <android.support.design.widget.BottomNavigationView
-                    android:id="@+id/bottom_navigation"
-                    android:layout_width="match_parent"
-                    android:layout_height="56dp"
-                    android:layout_alignParentBottom="true"
-                    android:background="@color/grey200"
-                    app:menu="@menu/bottom_navigation_menu" />
-
-                <FrameLayout
-                    android:id="@+id/container"
+                <RelativeLayout
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:layout_above="@id/bottom_navigation"
-                    android:layout_below="@id/toolbar_container"
-                    android:focusableInTouchMode="true"
-                    app:layout_behavior="@string/appbar_scrolling_view_behavior"
-                    tools:context=".presentation.view.activity.MainActivity"
-                    tools:showIn="@layout/activity_main" />
+                    android:layout_below="@id/toolbar_container">
+
+                    <android.support.design.widget.BottomNavigationView
+                        android:id="@+id/bottom_navigation"
+                        android:layout_width="match_parent"
+                        android:layout_height="56dp"
+                        android:layout_alignParentBottom="true"
+                        android:background="@color/grey200"
+                        app:menu="@menu/bottom_navigation_menu" />
+
+                    <FrameLayout
+                        android:id="@+id/container"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_above="@id/bottom_navigation"
+                        android:layout_alignParentStart="true"
+                        android:layout_alignParentTop="true"
+                        android:focusableInTouchMode="true"
+                        app:layout_behavior="@string/appbar_scrolling_view_behavior"
+                        tools:context=".presentation.view.activity.MainActivity"
+                        tools:showIn="@layout/activity_main" />
+                </RelativeLayout>
             </RelativeLayout>
         </android.support.design.widget.CoordinatorLayout>
 
