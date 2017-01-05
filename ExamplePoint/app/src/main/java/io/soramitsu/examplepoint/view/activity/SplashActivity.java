@@ -20,7 +20,16 @@ package io.soramitsu.examplepoint.view.activity;
 import android.content.Context;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
+
+import java.io.IOException;
+import java.security.InvalidKeyException;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.UnrecoverableKeyException;
+
+import javax.crypto.NoSuchPaddingException;
 
 import io.soramitsu.examplepoint.R;
 import io.soramitsu.examplepoint.navigator.Navigator;
@@ -45,25 +54,27 @@ public class SplashActivity extends AppCompatActivity {
         splashFragment = SplashFragment.newInstance();
         splashFragment.show(getSupportFragmentManager(), SplashFragment.TAG);
         try {
-            final Context context = getApplicationContext();
             final String uuid = Account.getUuid(getApplicationContext());
-            new Handler().postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    if (uuid == null || uuid.isEmpty()) {
-                        navigator.navigateToRegisterActivity(context);
-                    } else {
-                        navigator.navigateToMainActivity(context, uuid);
-                    }
-                    finish();
-                    splashFragment.dismiss();
-                }
-            }, 1000);
-        } catch (Exception e) {
-            e.printStackTrace();
-
-            finish();
-            splashFragment.dismiss();
+            new Handler().postDelayed(screenTransitionTask(uuid), 1000);
+        } catch (NoSuchAlgorithmException | UnrecoverableKeyException | NoSuchPaddingException
+                | KeyStoreException | InvalidKeyException | IOException e) {
+            new Handler().postDelayed(screenTransitionTask(null), 1000);
         }
+    }
+
+    private Runnable screenTransitionTask(@Nullable final String uuid) {
+        final Context context = getApplicationContext();
+        return new Runnable() {
+            @Override
+            public void run() {
+                if (uuid == null || uuid.isEmpty()) {
+                    navigator.navigateToRegisterActivity(context);
+                } else {
+                    navigator.navigateToMainActivity(context, uuid);
+                }
+                finish();
+                splashFragment.dismiss();
+            }
+        };
     }
 }
