@@ -89,6 +89,7 @@ public class AccountRegisterActivity extends AppCompatActivity
             uuid = Account.getUuid(context);
         } catch (NoSuchPaddingException | UnrecoverableKeyException | NoSuchAlgorithmException
                 | KeyStoreException | InvalidKeyException | IOException e) {
+            Log.e(TAG, "onAccountRegisterSuccessful: ", e);
             Toast.makeText(context, ErrorMessageFactory.create(context, e), Toast.LENGTH_SHORT).show();
             return;
         }
