@@ -68,6 +68,9 @@ public class MainActivity extends AppCompatActivity {
     public static final String TAG = MainActivity.class.getSimpleName();
 
     private static final String BUNDLE_MAIN_ACTIVITY_KEY_UUID = "UUID";
+    private static final int NAVIGATION_ITEM_RECEIVE = 0;
+    private static final int NAVIGATION_ITEM_WALLET = 1;
+    private static final int NAVIGATION_ITEM_SEND = 2;
 
     private Navigator navigator = Navigator.getInstance();
 
@@ -178,15 +181,35 @@ public class MainActivity extends AppCompatActivity {
                     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
                         boolean isChecked = item.isChecked();
                         switch (item.getItemId()) {
-                            case R.id.action_home:
+                            case R.id.action_receipt:
                                 if (isChecked) break;
-                                binding.bottomNavigation.setVisibility(View.VISIBLE);
-                                binding.toolbar.setTitle(getString(R.string.receive));
-                                switchFragment(assetReceiveFragment, AssetReceiveFragment.TAG);
-                                allClearNavigationMenuChecked();
-                                allClearBottomNavigationMenuChecked();
-                                binding.navigation.getMenu().getItem(0).setChecked(true);
-                                binding.bottomNavigation.getMenu().getItem(0).setChecked(true);
+                                Log.d(TAG, "onNavigationItemSelected: Receiver");
+                                transitionTo(
+                                        assetReceiveFragment,
+                                        AssetReceiveFragment.TAG,
+                                        R.string.receive,
+                                        NAVIGATION_ITEM_RECEIVE
+                                );
+                                break;
+                            case R.id.action_wallet:
+                                if (isChecked) break;
+                                Log.d(TAG, "onNavigationItemSelected: Wallet");
+                                transitionTo(
+                                        walletFragment,
+                                        WalletFragment.TAG,
+                                        R.string.wallet,
+                                        NAVIGATION_ITEM_WALLET
+                                );
+                                break;
+                            case R.id.action_sender:
+                                if (isChecked) break;
+                                Log.d(TAG, "onNavigationItemSelected: Sender");
+                                transitionTo(
+                                        assetSenderFragment,
+                                        AssetSenderFragment.TAG,
+                                        R.string.send,
+                                        NAVIGATION_ITEM_SEND
+                                );
                                 break;
                             case R.id.action_unregister:
                                 new AlertDialog.Builder(MainActivity.this)
@@ -215,7 +238,7 @@ public class MainActivity extends AppCompatActivity {
                                 binding.toolbar.setTitle(getString(R.string.open_source_license));
                                 switchFragment(libsFragment, "libs");
                                 allClearNavigationMenuChecked();
-                                binding.navigation.getMenu().getItem(2).setChecked(true);
+                                binding.navigation.getMenu().getItem(4).setChecked(true);
                                 break;
                         }
                         binding.drawerLayout.closeDrawer(GravityCompat.START);
@@ -231,23 +254,36 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
                         allClearNavigationMenuChecked();
+                        allClearBottomNavigationMenuChecked();
                         if (!item.isChecked()) {
-                            binding.navigation.getMenu().getItem(0).setChecked(true);
                             switch (item.getItemId()) {
                                 case R.id.action_receipt:
                                     Log.d(TAG, "onNavigationItemSelected: Receiver");
                                     binding.toolbar.setTitle(getString(R.string.receive));
-                                    switchFragment(assetReceiveFragment, AssetReceiveFragment.TAG);
+                                    transitionTo(
+                                            assetReceiveFragment,
+                                            AssetReceiveFragment.TAG,
+                                            R.string.receive,
+                                            NAVIGATION_ITEM_RECEIVE
+                                    );
                                     break;
                                 case R.id.action_wallet:
                                     Log.d(TAG, "onNavigationItemSelected: Wallet");
-                                    binding.toolbar.setTitle(getString(R.string.wallet));
-                                    switchFragment(walletFragment, WalletFragment.TAG);
+                                    transitionTo(
+                                            walletFragment,
+                                            WalletFragment.TAG,
+                                            R.string.wallet,
+                                            NAVIGATION_ITEM_WALLET
+                                    );
                                     break;
                                 case R.id.action_sender:
                                     Log.d(TAG, "onNavigationItemSelected: Sender");
-                                    binding.toolbar.setTitle(getString(R.string.send));
-                                    switchFragment(assetSenderFragment, AssetSenderFragment.TAG);
+                                    transitionTo(
+                                            assetSenderFragment,
+                                            AssetSenderFragment.TAG,
+                                            R.string.send,
+                                            NAVIGATION_ITEM_SEND
+                                    );
                                     break;
                             }
                         } else {
@@ -323,6 +359,16 @@ public class MainActivity extends AppCompatActivity {
         }
         fragmentTransaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
                 .commit();
+    }
+
+    private void transitionTo(Fragment to, String tag, int titleId, int nav) {
+        binding.bottomNavigation.setVisibility(View.VISIBLE);
+        binding.toolbar.setTitle(getString(titleId));
+        switchFragment(to, tag);
+        allClearNavigationMenuChecked();
+        allClearBottomNavigationMenuChecked();
+        binding.navigation.getMenu().getItem(nav).setChecked(true);
+        binding.bottomNavigation.getMenu().getItem(nav).setChecked(true);
     }
 
     private void setKeyboardListener(final OnKeyboardVisibilityListener listener) {
