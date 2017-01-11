@@ -253,8 +253,6 @@ public class MainActivity extends AppCompatActivity {
                 new BottomNavigationView.OnNavigationItemSelectedListener() {
                     @Override
                     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-                        allClearNavigationMenuChecked();
-                        allClearBottomNavigationMenuChecked();
                         if (!item.isChecked()) {
                             switch (item.getItemId()) {
                                 case R.id.action_receipt:
