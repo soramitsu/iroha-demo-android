@@ -48,7 +48,7 @@ public class AccountRegisterFragment extends Fragment implements AccountRegister
     private AccountRegisterListener accountRegisterListener;
 
     public interface AccountRegisterListener {
-        void onAccountRegisterSuccessful();
+        void onAccountRegisterSuccessful(String uuid);
     }
 
     @Override
@@ -108,7 +108,7 @@ public class AccountRegisterFragment extends Fragment implements AccountRegister
     }
 
     @Override
-    public void registerSuccessful() {
+    public void registerSuccessful(final String uuid) {
         successDialog.show(
                 getActivity(),
                 getString(R.string.register),
@@ -117,7 +117,7 @@ public class AccountRegisterFragment extends Fragment implements AccountRegister
                     @Override
                     public void onClick(View view) {
                         successDialog.hide();
-                        accountRegisterListener.onAccountRegisterSuccessful();
+                        accountRegisterListener.onAccountRegisterSuccessful(uuid);
                     }
                 });
     }

@@ -7,8 +7,8 @@ android {
         applicationId "io.soramitsu.examplepoint"
         minSdkVersion 19
         targetSdkVersion 25
-        versionCode 3
-        versionName "1.1.0"
+        versionCode 4
+        versionName "0.0.1β"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
@@ -27,7 +27,7 @@ android {
 
 def SUPPORT_PACKAGE_VERSION = "25.1.0"
 def CIRCLE_IMAGE_VIEW_PACKAGE_VERSION = "2.1.0"
-def IROHA_PACKAGE_VERSION = "1.2"
+def IROHA_PACKAGE_VERSION = "1.2.2"
 
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])

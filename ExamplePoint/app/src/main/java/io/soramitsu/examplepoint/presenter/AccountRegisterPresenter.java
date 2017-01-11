@@ -167,7 +167,7 @@ public class AccountRegisterPresenter implements Presenter<AccountRegisterView> 
             return;
         }
 
-        accountRegisterView.registerSuccessful();
+        accountRegisterView.registerSuccessful(result.uuid);
     }
 
     private void registerFailure(Throwable throwable) {
