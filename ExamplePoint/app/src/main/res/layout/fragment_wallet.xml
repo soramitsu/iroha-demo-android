@@ -15,7 +15,7 @@
             <TextView
                 android:id="@+id/pocket_money"
                 android:layout_width="match_parent"
-                android:layout_height="114dp"
+                android:layout_height="80dp"
                 android:background="@color/colorPrimary"
                 android:gravity="center"
                 android:textColor="@color/white"

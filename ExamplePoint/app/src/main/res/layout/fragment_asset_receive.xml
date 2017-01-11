@@ -9,7 +9,7 @@
 
         <RelativeLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
+            android:layout_height="wrap_content">
 
             <TextView
                 android:id="@+id/pocket_money"
@@ -29,15 +29,15 @@
                 android:layout_height="match_parent"
                 android:layout_below="@id/pocket_money"
                 android:layout_gravity="center"
-                android:padding="32dp">
+                android:padding="24dp">
 
                 <ImageView
                     android:id="@+id/qr_code"
-                    android:layout_width="240dp"
-                    android:layout_height="240dp"
+                    android:layout_width="200dp"
+                    android:layout_height="200dp"
                     android:layout_centerInParent="true"
                     android:layout_marginBottom="16dp"
-                    android:padding="8dp"
+                    android:padding="4dp"
                     tools:background="@color/colorPrimaryDark"
                     tools:src="@drawable/ic_qr_code" />
 
