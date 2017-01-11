@@ -27,22 +27,11 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.inputmethod.InputMethodManager;
-import android.widget.Toast;
-
-import java.io.IOException;
-import java.security.InvalidKeyException;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.UnrecoverableKeyException;
-
-import javax.crypto.NoSuchPaddingException;
 
 import io.soramitsu.examplepoint.R;
 import io.soramitsu.examplepoint.databinding.ActivityAccountRegisterBinding;
-import io.soramitsu.examplepoint.exception.ErrorMessageFactory;
 import io.soramitsu.examplepoint.navigator.Navigator;
 import io.soramitsu.examplepoint.view.fragment.AccountRegisterFragment;
-import io.soramitsu.irohaandroid.model.Account;
 
 public class AccountRegisterActivity extends AppCompatActivity
         implements AccountRegisterFragment.AccountRegisterListener {
@@ -82,17 +71,16 @@ public class AccountRegisterActivity extends AppCompatActivity
     }
 
     @Override
-    public void onAccountRegisterSuccessful() {
+    public void onAccountRegisterSuccessful(String uuid) {
         final Context context = getApplicationContext();
-        final String uuid;
-        try {
-            uuid = Account.getUuid(context);
-        } catch (NoSuchPaddingException | UnrecoverableKeyException | NoSuchAlgorithmException
-                | KeyStoreException | InvalidKeyException | IOException e) {
-            Log.e(TAG, "onAccountRegisterSuccessful: ", e);
-            Toast.makeText(context, ErrorMessageFactory.create(context, e), Toast.LENGTH_SHORT).show();
-            return;
-        }
+//        try {
+//            uuid = Account.getUuid(context);
+//        } catch (NoSuchPaddingException | UnrecoverableKeyException | NoSuchAlgorithmException
+//                | KeyStoreException | InvalidKeyException | IOException e) {
+//            Log.e(TAG, "onAccountRegisterSuccessful: ", e);
+//            Toast.makeText(context, ErrorMessageFactory.create(context, e), Toast.LENGTH_SHORT).show();
+//            return;
+//        }
         navigator.navigateToMainActivity(context, uuid);
         finish();
     }

@@ -20,7 +20,7 @@ package io.soramitsu.examplepoint.view;
 public interface AccountRegisterView extends LoadingView {
     void showError(String error);
 
-    void registerSuccessful();
+    void registerSuccessful(String uuid);
 
     String getAlias();
 }
