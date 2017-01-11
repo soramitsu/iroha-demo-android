@@ -27,7 +27,7 @@ android {
 
 def SUPPORT_PACKAGE_VERSION = "25.1.0"
 def CIRCLE_IMAGE_VIEW_PACKAGE_VERSION = "2.1.0"
-def IROHA_PACKAGE_VERSION = "1.2.1"
+def IROHA_PACKAGE_VERSION = "1.2.2"
 
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
