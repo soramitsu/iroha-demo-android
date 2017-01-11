@@ -7,8 +7,8 @@ android {
         applicationId "io.soramitsu.examplepoint"
         minSdkVersion 19
         targetSdkVersion 25
-        versionCode 3
-        versionName "1.1.0"
+        versionCode 4
+        versionName "0.0.1β"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
