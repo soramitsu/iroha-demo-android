@@ -54,20 +54,33 @@
                 tools:src="@drawable/icon_rec" />
 
             <TextView
-                android:id="@+id/trading_partner_name"
+                android:id="@+id/trading_prefix"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_centerVertical="true"
                 android:layout_marginStart="8dp"
                 android:layout_toEndOf="@+id/state"
+                android:textColor="@color/secondary_text"
+                android:textSize="18sp"
+                app:prefix='@{transaction}'
+                app:public_key='@{publicKey}'
+                tools:text="from"/>
+
+            <TextView
+                android:id="@+id/trading_partner_name"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:layout_marginStart="4dp"
+                android:layout_toEndOf="@+id/trading_prefix"
                 android:ellipsize="end"
                 android:maxEms="10"
                 android:maxLines="1"
                 android:textColor="@color/secondary_text"
                 android:textSize="18sp"
+                app:opponent='@{transaction}'
                 app:public_key='@{publicKey}'
-                app:transaction='@{transaction}'
-                tools:text="from あいうえおかきくけこ" />
+                tools:text="あいうえおかきくけこ" />
         </RelativeLayout>
 
         <TextView

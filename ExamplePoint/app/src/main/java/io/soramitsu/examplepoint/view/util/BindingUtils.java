@@ -53,22 +53,26 @@ public final class BindingUtils {
         view.setBackground(target);
     }
 
-    @BindingAdapter({"transaction", "public_key"})
-    public static void setTransactionOpponentText(TextView textView, Transaction transaction, String publicKey) {
-        String type;
-        String command = transaction.params.command;
-
-        if (transaction.isSender(publicKey) && command.equals(TransactionHistory.TRANSFER)) {
-            type = "to ";
+    @BindingAdapter({"prefix", "public_key"})
+    public static void setTransactionPrefix(TextView textView, Transaction tx, String publicKey) {
+        String prefix;
+        String command = tx.params.command;
+        if (tx.isSender(publicKey) && command.equals(TransactionHistory.TRANSFER)) {
+            prefix = "to";
         } else {
-            type = "from ";
+            prefix = "from";
         }
+        textView.setText(prefix);
+    }
 
-        String displayText = type;
+    @BindingAdapter({"opponent", "public_key"})
+    public static void setTransactionOpponentText(TextView textView, Transaction transaction, String publicKey) {
+        String displayText;
+        String command = transaction.params.command;
         if (command.equals("Add")) {
-            displayText += "Register";
+            displayText = "Register";
         } else {
-            displayText += transaction.params.receiver;
+            displayText = transaction.params.receiver;
         }
         textView.setText(displayText);
     }
