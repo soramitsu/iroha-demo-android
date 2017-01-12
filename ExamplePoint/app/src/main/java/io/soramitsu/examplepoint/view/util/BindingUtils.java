@@ -67,12 +67,16 @@ public final class BindingUtils {
 
     @BindingAdapter({"opponent", "public_key"})
     public static void setTransactionOpponentText(TextView textView, Transaction transaction, String publicKey) {
-        String displayText;
+        String displayText = "";
         String command = transaction.params.command;
         if (command.equals("Add")) {
             displayText = "Register";
-        } else {
-            displayText = transaction.params.receiver;
+        } else if (command.equals(TransactionHistory.TRANSFER)) {
+            if (transaction.isSender(publicKey)) {
+                displayText = transaction.params.receiver;
+            } else {
+                displayText = transaction.params.sender;
+            }
         }
         textView.setText(displayText);
     }
