@@ -27,6 +27,9 @@
         <activity
             android:name=".view.activity.MainActivity"
             android:screenOrientation="portrait" />
+        <meta-data
+            android:name="io.fabric.ApiKey"
+            android:value="${twitterFabricApiKey}" />
     </application>
 
 </manifest>

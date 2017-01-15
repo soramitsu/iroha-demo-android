@@ -19,6 +19,9 @@ package io.soramitsu.examplepoint;
 
 import android.app.Application;
 
+import com.crashlytics.android.Crashlytics;
+
+import io.fabric.sdk.android.Fabric;
 import io.soramitsu.irohaandroid.Iroha;
 
 public class IrohaApplication extends Application {
@@ -26,6 +29,7 @@ public class IrohaApplication extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
+        Fabric.with(getApplicationContext(), new Crashlytics());
         new Iroha.Builder()
                 .baseUrl("https://point-demo.iroha.tech")
                 .build();
