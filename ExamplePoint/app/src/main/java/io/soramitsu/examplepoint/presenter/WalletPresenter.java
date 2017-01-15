@@ -25,6 +25,8 @@ import android.util.Log;
 import android.view.View;
 import android.widget.AbsListView;
 
+import com.crashlytics.android.Crashlytics;
+
 import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.KeyStoreException;
@@ -203,6 +205,7 @@ public class WalletPresenter implements Presenter<WalletView> {
 
         final Context context = walletView.getContext();
         if (NetworkUtil.isOnline(walletView.getContext())) {
+            Crashlytics.log(Log.ERROR, WalletPresenter.TAG, throwable.getMessage());
             walletView.showError(
                     ErrorMessageFactory.create(context, throwable)
             );
@@ -269,10 +272,10 @@ public class WalletPresenter implements Presenter<WalletView> {
             uuid = Account.getUuid(context);
         } catch (NoSuchPaddingException | UnrecoverableKeyException | NoSuchAlgorithmException
                 | KeyStoreException | InvalidKeyException | IOException e) {
+            Crashlytics.log(Log.ERROR, AssetSenderPresenter.TAG, e.getMessage());
             walletView.showError(ErrorMessageFactory.create(context, e));
             return null;
         }
         return uuid;
     }
-
 }

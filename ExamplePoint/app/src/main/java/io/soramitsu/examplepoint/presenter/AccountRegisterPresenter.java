@@ -24,6 +24,8 @@ import android.view.KeyEvent;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 
+import com.crashlytics.android.Crashlytics;
+
 import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.KeyStoreException;
@@ -123,6 +125,7 @@ public class AccountRegisterPresenter implements Presenter<AccountRegisterView> 
                 } catch (InvalidKeyException | NoSuchAlgorithmException | KeyStoreException
                         | NoSuchPaddingException | IOException e) {
                     Log.e(TAG, "onClick: ", e);
+                    Crashlytics.log(Log.ERROR, AccountRegisterPresenter.TAG, e.getMessage());
                 }
                 register(keyPair, alias);
             }
@@ -162,6 +165,7 @@ public class AccountRegisterPresenter implements Presenter<AccountRegisterView> 
         } catch (InvalidKeyException | NoSuchAlgorithmException
                 | KeyStoreException | NoSuchPaddingException | IOException e) {
             Log.e(TAG, "onSuccessful: ", e);
+            Crashlytics.log(Log.ERROR, AccountRegisterPresenter.TAG, e.getMessage());
             KeyPair.delete(accountRegisterView.getContext());
             accountRegisterView.showError(ErrorMessageFactory.create(accountRegisterView.getContext(), e));
             return;
@@ -176,7 +180,8 @@ public class AccountRegisterPresenter implements Presenter<AccountRegisterView> 
         KeyPair.delete(accountRegisterView.getContext());
 
         Context c = accountRegisterView.getContext();
-        if (NetworkUtil.isOnline(accountRegisterView.getContext())) {
+        if (NetworkUtil.isOnline(c)) {
+            Crashlytics.log(Log.ERROR, AccountRegisterPresenter.TAG, throwable.getMessage());
             accountRegisterView.showError(ErrorMessageFactory.create(c, throwable));
         } else {
             accountRegisterView.showError(ErrorMessageFactory.create(c, new NetworkNotConnectedException()));
