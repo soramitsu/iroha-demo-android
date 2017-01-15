@@ -40,11 +40,11 @@ import io.soramitsu.irohaandroid.model.Transaction;
 public final class BindingUtils {
     @BindingAdapter({"background", "public_key", "context"})
     public static void setBackgroundDrawableByTransactionType(
-            CircleImageView view, Transaction transaction, String publicKey, Context c) {
+            CircleImageView view, Transaction tx, String publicKey, Context c) {
 
         final Drawable target;
-
-        if (transaction.isSender(publicKey) && transaction.params.command.equals(TransactionHistory.TRANSFER)) {
+        String command = tx.params.command;
+        if (tx.isSender(publicKey) && command.equals(TransactionHistory.TRANSFER)) {
             target = AndroidSupportUtil.getDrawable(c, R.drawable.icon_send);
         } else {
             target = AndroidSupportUtil.getDrawable(c, R.drawable.icon_rec);
@@ -66,16 +66,16 @@ public final class BindingUtils {
     }
 
     @BindingAdapter({"opponent", "public_key"})
-    public static void setTransactionOpponentText(TextView textView, Transaction transaction, String publicKey) {
+    public static void setTransactionOpponentText(TextView textView, Transaction tx, String publicKey) {
         String displayText = "";
-        String command = transaction.params.command;
+        String command = tx.params.command;
         if (command.equals("Add")) {
             displayText = "Register";
         } else if (command.equals(TransactionHistory.TRANSFER)) {
-            if (transaction.isSender(publicKey)) {
-                displayText = transaction.params.receiver;
+            if (tx.isSender(publicKey)) {
+                displayText = tx.params.receiver;
             } else {
-                displayText = transaction.params.sender;
+                displayText = tx.params.sender;
             }
         }
         textView.setText(displayText);
