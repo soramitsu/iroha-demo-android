@@ -15,6 +15,7 @@ repositories {
 }
 
 android {
+    apply from: './debug.gradle', to: android
     apply from: './release.gradle', to: android
 
     compileSdkVersion 25
@@ -29,9 +30,10 @@ android {
     }
     buildTypes {
         debug {
+            minifyEnabled true
             testCoverageEnabled true
 
-            manifestPlaceholders = buildTypes.release.manifestPlaceholders
+            manifestPlaceholders = buildTypes.debug.manifestPlaceholders
         }
         release {
             minifyEnabled false
