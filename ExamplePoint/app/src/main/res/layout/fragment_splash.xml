@@ -1,15 +1,17 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:tools="http://schemas.android.com/tools"
     android:background="@drawable/splash">
 
     <TextView
+        android:id="@+id/version_name"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:layout_alignParentEnd="true"
         android:padding="8dp"
-        android:text="0.0.1β"
-        android:textColor="@color/white" />
+        android:textColor="@color/white"
+        tools:text="0.0.1β" />
 
 </RelativeLayout>

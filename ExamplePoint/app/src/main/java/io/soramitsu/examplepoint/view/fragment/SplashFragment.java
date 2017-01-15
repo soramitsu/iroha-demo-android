@@ -25,8 +25,11 @@ import android.support.annotation.NonNull;
 import android.support.v4.app.DialogFragment;
 import android.view.ViewGroup;
 import android.view.Window;
+import android.widget.TextView;
 
 import io.soramitsu.examplepoint.R;
+
+import static io.soramitsu.examplepoint.IrohaApplication.getVersionName;
 
 public class SplashFragment extends DialogFragment {
     public static final String TAG = SplashFragment.class.getSimpleName();
@@ -47,6 +50,8 @@ public class SplashFragment extends DialogFragment {
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.MATCH_PARENT
         );
+
+        ((TextView)dialog.findViewById(R.id.version_name)).setText(getVersionName(getContext()));
     }
 
     @NonNull
