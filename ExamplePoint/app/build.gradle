@@ -24,8 +24,8 @@ android {
         applicationId "io.soramitsu.examplepoint"
         minSdkVersion 19
         targetSdkVersion 25
-        versionCode 5
-        versionName "0.0.2β"
+        versionCode 6
+        versionName "0.0.3β"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
