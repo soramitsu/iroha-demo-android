@@ -15,6 +15,7 @@ repositories {
 }
 
 android {
+    apply from: './debug.gradle', to: android
     apply from: './release.gradle', to: android
 
     compileSdkVersion 25
@@ -23,15 +24,16 @@ android {
         applicationId "io.soramitsu.examplepoint"
         minSdkVersion 19
         targetSdkVersion 25
-        versionCode 5
-        versionName "0.0.2β"
+        versionCode 6
+        versionName "0.0.3β"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
         debug {
+            minifyEnabled true
             testCoverageEnabled true
 
-            manifestPlaceholders = buildTypes.release.manifestPlaceholders
+            manifestPlaceholders = buildTypes.debug.manifestPlaceholders
         }
         release {
             minifyEnabled false
