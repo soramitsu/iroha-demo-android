@@ -31,6 +31,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
 
+import com.crashlytics.android.Crashlytics;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.zxing.WriterException;
@@ -47,7 +48,9 @@ import javax.crypto.NoSuchPaddingException;
 
 import io.soramitsu.examplepoint.R;
 import io.soramitsu.examplepoint.exception.ErrorMessageFactory;
+import io.soramitsu.examplepoint.exception.NetworkNotConnectedException;
 import io.soramitsu.examplepoint.model.TransferQRParameter;
+import io.soramitsu.examplepoint.util.NetworkUtil;
 import io.soramitsu.examplepoint.view.AssetReceiveView;
 import io.soramitsu.irohaandroid.Iroha;
 import io.soramitsu.irohaandroid.callback.Callback;
@@ -219,6 +222,14 @@ public class AssetReceivePresenter implements Presenter<AssetReceiveView> {
             public void onFailure(Throwable throwable) {
                 if (assetReceiveView.isRefreshing()) {
                     assetReceiveView.setRefreshing(false);
+                }
+
+                Context c = assetReceiveView.getContext();
+                if (NetworkUtil.isOnline(c)) {
+                    Crashlytics.log(Log.ERROR, AssetReceivePresenter.TAG, throwable.getMessage());
+                    assetReceiveView.showError(ErrorMessageFactory.create(c, throwable));
+                } else {
+                    assetReceiveView.showError(ErrorMessageFactory.create(c, new NetworkNotConnectedException()));
                 }
 
                 assetReceiveView.showError(

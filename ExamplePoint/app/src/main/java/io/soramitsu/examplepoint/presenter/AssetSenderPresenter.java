@@ -24,6 +24,7 @@ import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
 
+import com.crashlytics.android.Crashlytics;
 import com.google.gson.Gson;
 
 import org.jetbrains.annotations.NotNull;
@@ -130,6 +131,7 @@ public class AssetSenderPresenter implements Presenter<AssetSenderView> {
                     params = new Gson().fromJson(result, TransferQRParameter.class);
                 } catch (Exception e) {
                     Log.e(TAG, "setOnResult: json could not parse to object!");
+                    Crashlytics.log(Log.ERROR, AssetSenderPresenter.TAG, e.getMessage());
                     assetSenderView.showError(ErrorMessageFactory.create(context, new IllegalQRCodeException()));
                     return;
                 }
@@ -143,6 +145,7 @@ public class AssetSenderPresenter implements Presenter<AssetSenderView> {
             @Override
             public void onFailure(Throwable throwable) {
                 Log.e(TAG, "onFailure: ", throwable);
+                Crashlytics.log(Log.ERROR, AssetSenderPresenter.TAG, throwable.getMessage());
             }
         };
     }
@@ -233,7 +236,8 @@ public class AssetSenderPresenter implements Presenter<AssetSenderView> {
             public void onFailure(Throwable throwable) {
                 assetSenderView.hideProgress();
 
-                if (NetworkUtil.isOnline(assetSenderView.getContext())) {
+                if (NetworkUtil.isOnline(c)) {
+                    Crashlytics.log(Log.ERROR, AssetSenderPresenter.TAG, throwable.getMessage());
                     assetSenderView.showError(ErrorMessageFactory.create(c, throwable));
                 } else {
                     assetSenderView.showError(ErrorMessageFactory.create(c, new NetworkNotConnectedException()));
@@ -261,6 +265,7 @@ public class AssetSenderPresenter implements Presenter<AssetSenderView> {
             } catch (NoSuchPaddingException | UnrecoverableKeyException | NoSuchAlgorithmException
                     | KeyStoreException | InvalidKeyException | IOException e) {
                 Log.e(TAG, "getKeyPair: ", e);
+                Crashlytics.log(Log.ERROR, AssetSenderPresenter.TAG, e.getMessage());
                 assetSenderView.showError(ErrorMessageFactory.create(context, e));
                 return new KeyPair("", "");
             }

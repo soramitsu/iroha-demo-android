@@ -1,23 +1,43 @@
+buildscript {
+    repositories {
+        maven { url 'https://maven.fabric.io/public' }
+    }
+
+    dependencies {
+        classpath 'io.fabric.tools:gradle:1.+'
+    }
+}
 apply plugin: 'com.android.application'
+apply plugin: 'io.fabric'
+
+repositories {
+    maven { url 'https://maven.fabric.io/public' }
+}
 
 android {
+    apply from: './release.gradle', to: android
+
     compileSdkVersion 25
     buildToolsVersion "25.0.2"
     defaultConfig {
         applicationId "io.soramitsu.examplepoint"
         minSdkVersion 19
         targetSdkVersion 25
-        versionCode 4
-        versionName "0.0.1β"
+        versionCode 5
+        versionName "0.0.2β"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
         debug {
             testCoverageEnabled true
+
+            manifestPlaceholders = buildTypes.release.manifestPlaceholders
         }
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+
+            manifestPlaceholders = buildTypes.release.manifestPlaceholders
         }
     }
     dataBinding {
@@ -42,4 +62,7 @@ dependencies {
     compile "de.hdodenhof:circleimageview:${CIRCLE_IMAGE_VIEW_PACKAGE_VERSION}"
     compile 'com.mikepenz:aboutlibraries:5.9.1'
     testCompile 'junit:junit:4.12'
+    compile('com.crashlytics.sdk.android:crashlytics:2.6.5@aar') {
+        transitive = true;
+    }
 }
