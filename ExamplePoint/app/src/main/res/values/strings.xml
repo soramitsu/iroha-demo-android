@@ -26,7 +26,8 @@
     <string name="error_message_large_number_of_digits">Large number of digits!</string>
     <string name="unknown_receiver">Unknown</string>
     <string name="error_message_account_duplicate">Account already exist!</string>
-    <string name="error_message_user_not_found">Account not found!</string>
+    <string name="error_message_user_not_found">Could not get account info. Would you like to register your account again?
+※Possessed your all points will be reset.</string>
     <string name="has_asset_amount">"%1$s IRH"</string>
     <string name="home">HOME</string>
     <string name="unregister">Unregister</string>
@@ -37,4 +38,6 @@
     <string name="open_source_license">Open Source License</string>
     <string name="library_description">IrohaAndroid is client library for using iroha for Android.</string>
     <string name="message_copy_to_clipboard">Copy to clipboard!</string>
+    <string name="refresh">Refresh</string>
+    <string name="reregistration">Reregistration</string>
 </resources>

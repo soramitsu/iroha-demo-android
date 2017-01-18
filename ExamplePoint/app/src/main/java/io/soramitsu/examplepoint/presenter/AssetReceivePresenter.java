@@ -227,14 +227,10 @@ public class AssetReceivePresenter implements Presenter<AssetReceiveView> {
                 Context c = assetReceiveView.getContext();
                 if (NetworkUtil.isOnline(c)) {
                     Crashlytics.log(Log.ERROR, AssetReceivePresenter.TAG, throwable.getMessage());
-                    assetReceiveView.showError(ErrorMessageFactory.create(c, throwable));
+                    assetReceiveView.showError(ErrorMessageFactory.create(c, throwable), throwable);
                 } else {
-                    assetReceiveView.showError(ErrorMessageFactory.create(c, new NetworkNotConnectedException()));
+                    assetReceiveView.showError(ErrorMessageFactory.create(c, new NetworkNotConnectedException()), throwable);
                 }
-
-                assetReceiveView.showError(
-                        ErrorMessageFactory.create(assetReceiveView.getContext(), throwable)
-                );
             }
         };
     }
@@ -252,7 +248,7 @@ public class AssetReceivePresenter implements Presenter<AssetReceiveView> {
             } catch (NoSuchPaddingException | UnrecoverableKeyException | NoSuchAlgorithmException
                     | KeyStoreException | InvalidKeyException | IOException e) {
                 Log.e(TAG, "getKeyPair: ", e);
-                assetReceiveView.showError(ErrorMessageFactory.create(context, e));
+                assetReceiveView.showError(ErrorMessageFactory.create(context, e), e);
                 return "";
             }
         }
@@ -267,7 +263,7 @@ public class AssetReceivePresenter implements Presenter<AssetReceiveView> {
                 uuid = Account.getUuid(context);
             } catch (NoSuchPaddingException | UnrecoverableKeyException | NoSuchAlgorithmException
                     | KeyStoreException | InvalidKeyException | IOException e) {
-                assetReceiveView.showError(ErrorMessageFactory.create(context, e));
+                assetReceiveView.showError(ErrorMessageFactory.create(context, e), e);
                 return "";
             }
         }
@@ -282,7 +278,7 @@ public class AssetReceivePresenter implements Presenter<AssetReceiveView> {
             }
             setQR(qr);
         } catch (WriterException e) {
-            assetReceiveView.showError(ErrorMessageFactory.create(assetReceiveView.getContext(), e));
+            assetReceiveView.showError(ErrorMessageFactory.create(assetReceiveView.getContext(), e), e);
         }
     }
 
@@ -291,7 +287,7 @@ public class AssetReceivePresenter implements Presenter<AssetReceiveView> {
             qr = QRCodeGenerator.generateQR(generateQrParamsText(), 500, QRCodeGenerator.ENCODE_CHARACTER_TYPE_UTF_8);
             setQR(qr);
         } catch (WriterException e) {
-            assetReceiveView.showError(ErrorMessageFactory.create(assetReceiveView.getContext(), e));
+            assetReceiveView.showError(ErrorMessageFactory.create(assetReceiveView.getContext(), e), e);
         }
     }
 

@@ -206,13 +206,9 @@ public class WalletPresenter implements Presenter<WalletView> {
         final Context context = walletView.getContext();
         if (NetworkUtil.isOnline(walletView.getContext())) {
             Crashlytics.log(Log.ERROR, WalletPresenter.TAG, throwable.getMessage());
-            walletView.showError(
-                    ErrorMessageFactory.create(context, throwable)
-            );
+            walletView.showError(ErrorMessageFactory.create(context, throwable), throwable);
         } else {
-            walletView.showError(
-                    ErrorMessageFactory.create(context, new NetworkNotConnectedException())
-            );
+            walletView.showError(ErrorMessageFactory.create(context, new NetworkNotConnectedException()), throwable);
         }
     }
 
@@ -273,7 +269,7 @@ public class WalletPresenter implements Presenter<WalletView> {
         } catch (NoSuchPaddingException | UnrecoverableKeyException | NoSuchAlgorithmException
                 | KeyStoreException | InvalidKeyException | IOException e) {
             Crashlytics.log(Log.ERROR, AssetSenderPresenter.TAG, e.getMessage());
-            walletView.showError(ErrorMessageFactory.create(context, e));
+            walletView.showError(ErrorMessageFactory.create(context, e), e);
             return null;
         }
         return uuid;
