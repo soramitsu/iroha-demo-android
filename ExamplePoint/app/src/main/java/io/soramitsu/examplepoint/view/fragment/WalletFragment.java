@@ -17,10 +17,13 @@ limitations under the License.
 
 package io.soramitsu.examplepoint.view.fragment;
 
+import android.content.Context;
+import android.content.DialogInterface;
 import android.databinding.DataBindingUtil;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v7.app.AlertDialog;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -32,10 +35,13 @@ import java.util.ArrayList;
 import io.soramitsu.examplepoint.R;
 import io.soramitsu.examplepoint.databinding.FragmentWalletBinding;
 import io.soramitsu.examplepoint.model.TransactionHistory;
+import io.soramitsu.examplepoint.navigator.Navigator;
 import io.soramitsu.examplepoint.presenter.WalletPresenter;
 import io.soramitsu.examplepoint.view.WalletView;
 import io.soramitsu.examplepoint.view.activity.MainActivity;
 import io.soramitsu.examplepoint.view.adapter.TransactionListAdapter;
+import io.soramitsu.irohaandroid.exception.UserNotFoundException;
+import io.soramitsu.irohaandroid.model.Account;
 import io.soramitsu.irohaandroid.model.KeyPair;
 import io.soramitsu.irohaandroid.model.Transaction;
 
@@ -165,8 +171,39 @@ public class WalletFragment extends Fragment
     }
 
     @Override
-    public void showError(final String error) {
-        Toast.makeText(getContext(), error, Toast.LENGTH_SHORT).show();
+    public void showError(String error, Throwable throwable) {
+        if (throwable instanceof UserNotFoundException) {
+            new AlertDialog.Builder(getActivity())
+                    .setMessage(R.string.error_message_user_not_found)
+                    .setNeutralButton(R.string.refresh, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
+                            dialogInterface.dismiss();
+                            walletPresenter.onSwipeRefresh().onRefresh();
+                        }
+                    })
+                    .setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
+                            dialogInterface.dismiss();
+                        }
+                    })
+                    .setPositiveButton(R.string.reregistration, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
+                            dialogInterface.dismiss();
+                            Context c = getContext();
+                            KeyPair.delete(c);
+                            Account.delete(c);
+                            Navigator.getInstance().navigateToRegisterActivity(c);
+                            getActivity().finish();
+                        }
+                    })
+                    .setCancelable(true)
+                    .create().show();
+        } else {
+            Toast.makeText(getContext(), error, Toast.LENGTH_SHORT).show();
+        }
     }
 
     @Override

@@ -17,6 +17,7 @@ limitations under the License.
 
 package io.soramitsu.examplepoint.view.fragment;
 
+import android.content.DialogInterface;
 import android.databinding.DataBindingUtil;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -100,7 +101,12 @@ public class AssetSenderFragment extends Fragment
 
     @Override
     public void showError(String error) {
-        errorDialog.show(getActivity(), error);
+        errorDialog.show(getActivity(), error, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                dialogInterface.dismiss();
+            }
+        });
     }
 
     @Override

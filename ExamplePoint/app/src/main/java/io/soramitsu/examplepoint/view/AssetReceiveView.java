@@ -24,7 +24,7 @@ public interface AssetReceiveView extends View {
 
     void setRefreshing(boolean refreshing);
 
-    void showError(String error);
+    void showError(String error, Throwable throwable);
 
     String getAmount();
 

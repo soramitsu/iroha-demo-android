@@ -17,11 +17,14 @@ limitations under the License.
 
 package io.soramitsu.examplepoint.view.fragment;
 
+import android.content.Context;
+import android.content.DialogInterface;
 import android.databinding.DataBindingUtil;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v7.app.AlertDialog;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -29,9 +32,13 @@ import android.widget.Toast;
 
 import io.soramitsu.examplepoint.R;
 import io.soramitsu.examplepoint.databinding.FragmentAssetReceiveBinding;
+import io.soramitsu.examplepoint.navigator.Navigator;
 import io.soramitsu.examplepoint.presenter.AssetReceivePresenter;
 import io.soramitsu.examplepoint.view.AssetReceiveView;
 import io.soramitsu.examplepoint.view.activity.MainActivity;
+import io.soramitsu.irohaandroid.exception.UserNotFoundException;
+import io.soramitsu.irohaandroid.model.Account;
+import io.soramitsu.irohaandroid.model.KeyPair;
 
 public class AssetReceiveFragment extends Fragment implements AssetReceiveView, MainActivity.MainActivityListener {
     public static final String TAG = AssetReceiveFragment.class.getSimpleName();
@@ -99,8 +106,39 @@ public class AssetReceiveFragment extends Fragment implements AssetReceiveView, 
     }
 
     @Override
-    public void showError(String error) {
-        Toast.makeText(getContext(), error, Toast.LENGTH_SHORT).show();
+    public void showError(String error, Throwable throwable) {
+        if (throwable instanceof UserNotFoundException) {
+            new AlertDialog.Builder(getActivity())
+                    .setMessage(R.string.error_message_user_not_found)
+                    .setNeutralButton(R.string.refresh, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
+                            dialogInterface.dismiss();
+                            assetReceivePresenter.onSwipeRefresh().onRefresh();
+                        }
+                    })
+                    .setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
+                            dialogInterface.dismiss();
+                        }
+                    })
+                    .setPositiveButton(R.string.reregistration, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
+                            dialogInterface.dismiss();
+                            Context c = getContext();
+                            KeyPair.delete(c);
+                            Account.delete(c);
+                            Navigator.getInstance().navigateToRegisterActivity(c);
+                            getActivity().finish();
+                        }
+                    })
+                    .setCancelable(true)
+                    .create().show();
+        } else {
+            Toast.makeText(getContext(), error, Toast.LENGTH_SHORT).show();
+        }
     }
 
     @Override

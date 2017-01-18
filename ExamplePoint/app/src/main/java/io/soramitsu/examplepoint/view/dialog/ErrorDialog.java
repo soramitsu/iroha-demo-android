@@ -18,6 +18,8 @@ limitations under the License.
 package io.soramitsu.examplepoint.view.dialog;
 
 import android.app.Activity;
+import android.app.Dialog;
+import android.content.DialogInterface;
 import android.support.v7.app.AlertDialog;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -35,7 +37,7 @@ public class ErrorDialog {
         dialogErrorBinding = DialogBinding.inflate(inflater);
     }
 
-    public void show(Activity activity, String message) {
+    public void show(Activity activity, String message, final Dialog.OnClickListener onClickListener) {
         if (dialog != null && dialog.isShowing()) {
             return;
         }
@@ -51,7 +53,7 @@ public class ErrorDialog {
         dialogErrorBinding.ok.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                dialog.dismiss();
+                onClickListener.onClick(dialog, DialogInterface.BUTTON_POSITIVE);
             }
         });
 

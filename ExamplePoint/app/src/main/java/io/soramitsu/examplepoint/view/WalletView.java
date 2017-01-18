@@ -30,7 +30,7 @@ public interface WalletView extends LoadingView {
 
     void setRefreshEnable(boolean enable);
 
-    void showError(String error);
+    void showError(String error, Throwable throwable);
 
     TransactionHistory getTransaction();
 
