@@ -17,11 +17,29 @@ limitations under the License.
 
 package io.soramitsu.examplepoint.model;
 
+import io.realm.Realm;
 import io.realm.RealmObject;
+import io.realm.RealmResults;
 import io.realm.annotations.PrimaryKey;
 
 public class Contact extends RealmObject {
+    public static final String FIELD_NAME_PUBLIC_KEY = "publicKey";
+
     @PrimaryKey
     public String publicKey;
     public String alias;
+
+    public static Contact newContact(Realm realm, String publicKey) {
+        return realm.createObject(Contact.class, publicKey);
+    }
+
+    public static RealmResults<Contact> findAll(Realm realm) {
+        return realm.where(Contact.class).findAll();
+    }
+
+    public static Contact findContactByPublicKey(Realm realm, String publicKey) {
+        return realm.where(Contact.class)
+                .equalTo(Contact.FIELD_NAME_PUBLIC_KEY, publicKey)
+                .findFirst();
+    }
 }
