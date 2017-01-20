@@ -39,7 +39,7 @@
                     android:layout_marginBottom="16dp"
                     android:padding="4dp"
                     tools:background="@color/colorPrimaryDark"
-                    tools:src="@drawable/ic_qr_code" />
+                    tools:src="@drawable/ic_action_read_qr" />
 
                 <android.support.design.widget.TextInputLayout
                     android:id="@+id/receiver_amount_container"

@@ -4,7 +4,7 @@
     <group android:id="@+id/menu_first_group">
         <item
             android:id="@+id/action_qr_reader"
-            android:icon="@drawable/ic_qr_code"
+            android:icon="@drawable/ic_action_read_qr"
             android:title="qr_reader"
             app:showAsAction="always" />
     </group>
