@@ -27,7 +27,6 @@ import com.crashlytics.android.Crashlytics;
 import io.fabric.sdk.android.Fabric;
 import io.realm.Realm;
 import io.realm.RealmConfiguration;
-import io.soramitsu.examplepoint.model.Contact;
 import io.soramitsu.irohaandroid.Iroha;
 
 public class IrohaApplication extends Application {
@@ -40,13 +39,8 @@ public class IrohaApplication extends Application {
         Fabric.with(getApplicationContext(), new Crashlytics());
         Realm.init(this);
         RealmConfiguration realmConfig = new RealmConfiguration.Builder().build();
-        Realm.deleteRealm(realmConfig); // Delete Realm between app restarts.
+//        Realm.deleteRealm(realmConfig); // Delete Realm between app restarts.
         Realm.setDefaultConfiguration(realmConfig);
-        Realm realm = Realm.getDefaultInstance();
-        realm.beginTransaction();
-        Contact contact = realm.createObject(Contact.class, "hogehogehogehoge");
-        contact.alias = "alias";
-        realm.commitTransaction();
         new Iroha.Builder()
                 .baseUrl("https://point-demo.iroha.tech")
                 .build();
