@@ -33,6 +33,7 @@ import android.support.v4.content.ContextCompat;
 import android.support.v4.view.GravityCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -151,6 +152,17 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 binding.drawerLayout.openDrawer(GravityCompat.START);
+            }
+        });
+        binding.toolbar.inflateMenu(R.menu.toolbar_main_menu);
+        binding.toolbar.setOnMenuItemClickListener(new Toolbar.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem item) {
+                if (item.getItemId() == R.id.action_contact) {
+                    navigator.navigateToContactListActivity(getApplicationContext());
+                    return true;
+                }
+                return true;
             }
         });
     }

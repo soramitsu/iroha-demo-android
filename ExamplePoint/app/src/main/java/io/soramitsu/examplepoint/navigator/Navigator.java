@@ -22,6 +22,7 @@ import android.content.Intent;
 import android.support.annotation.NonNull;
 
 import io.soramitsu.examplepoint.view.activity.AccountRegisterActivity;
+import io.soramitsu.examplepoint.view.activity.ContactActivity;
 import io.soramitsu.examplepoint.view.activity.MainActivity;
 import io.soramitsu.irohaandroid.callback.Callback;
 import io.soramitsu.irohaandroid.qr.QRReaderBuilder;
@@ -57,6 +58,12 @@ public class Navigator {
                     .setCallback(callback)
                     .build();
             context.startActivity(intent);
+        }
+    }
+
+    public void navigateToContactListActivity(Context context) {
+        if (context != null) {
+            context.startActivity(ContactActivity.getCallingIntent(context));
         }
     }
 }
