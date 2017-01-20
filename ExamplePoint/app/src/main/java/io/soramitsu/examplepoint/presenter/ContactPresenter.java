@@ -89,7 +89,7 @@ public class ContactPresenter implements Presenter<ContactView> {
                     @Override
                     public void execute(Realm realm) {
                         Contact contact = Contact.findContactByPublicKey(realm, publicKey);
-                        contact.alias = contactView.getAlias();
+                        contact.alias = contactView.getAlias().isEmpty() ? null : contactView.getAlias();
                     }
                 });
 
