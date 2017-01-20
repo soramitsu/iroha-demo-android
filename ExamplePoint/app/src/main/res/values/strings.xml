@@ -35,6 +35,7 @@
     <string name="to">to</string>
     <string name="error_receiver_not_found">Please input (or read QR code) receiver.</string>
     <string name="transaction_history_not_found">Transaction history not found.</string>
+    <string name="contacts_not_found">Contacts not found.</string>
     <string name="open_source_license">Open Source License</string>
     <string name="library_description">IrohaAndroid is client library for using iroha for Android.</string>
     <string name="message_copy_to_clipboard">Copy to clipboard!</string>

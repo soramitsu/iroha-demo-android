@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <group android:id="@+id/menu_first_group">
+        <item
+            android:id="@+id/action_qr_reader"
+            android:icon="@drawable/ic_qr_code"
+            android:title="qr_reader"
+            app:showAsAction="always" />
+    </group>
+</menu>
