@@ -17,6 +17,7 @@ limitations under the License.
 
 package io.soramitsu.examplepoint.presenter;
 
+import android.content.Context;
 import android.support.annotation.NonNull;
 import android.view.View;
 import android.widget.AdapterView;
@@ -27,6 +28,7 @@ import com.google.gson.Gson;
 import io.realm.Realm;
 import io.realm.RealmResults;
 import io.realm.exceptions.RealmPrimaryKeyConstraintException;
+import io.soramitsu.examplepoint.R;
 import io.soramitsu.examplepoint.model.Contact;
 import io.soramitsu.examplepoint.model.TransferQRParameter;
 import io.soramitsu.examplepoint.view.ContactsListView;
@@ -84,23 +86,36 @@ public class ContactsListPresenter implements Presenter<ContactsListView> {
     }
 
     public RealmResults<Contact> findAll() {
-        return realm.where(Contact.class).findAll();
+        return Contact.findAll(realm);
     }
 
     public void qrReadSuccessful(String result) {
+        final Context c = contactsListView.getContext();
         try {
-            final TransferQRParameter qrParam = new Gson().fromJson(result, TransferQRParameter.class);
-            realm.executeTransaction(new Realm.Transaction() {
-                @Override
-                public void execute(Realm realm) {
-                    Contact contact = realm.createObject(Contact.class, qrParam.account);
-                    contact.alias = qrParam.alias;
-                }
-            });
+            TransferQRParameter qrParam = parse(result, TransferQRParameter.class);
+            saveContact(qrParam.account, qrParam.alias);
 
-            Toast.makeText(contactsListView.getContext(), result, Toast.LENGTH_SHORT).show();
+            Toast.makeText(
+                    c,
+                    c.getString(R.string.successfull_message_registerd_contact, qrParam.alias),
+                    Toast.LENGTH_SHORT
+            ).show();
         } catch (RealmPrimaryKeyConstraintException e) {
-            Toast.makeText(contactsListView.getContext(), "既に登録済みです", Toast.LENGTH_SHORT).show();
+            Toast.makeText(c, R.string.error_message_already_registered, Toast.LENGTH_SHORT).show();
         }
+    }
+
+    private <T> T parse(String json, Class<T> clazz) {
+        return new Gson().fromJson(json, clazz);
+    }
+
+    private void saveContact(final String publicKey, final String alias) {
+        realm.executeTransaction(new Realm.Transaction() {
+            @Override
+            public void execute(Realm realm) {
+                Contact contact = Contact.newContact(realm, publicKey);
+                contact.alias = alias;
+            }
+        });
     }
 }

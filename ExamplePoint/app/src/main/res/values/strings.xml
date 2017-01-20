@@ -44,4 +44,6 @@
     <string name="reregistration">Reregistration</string>
     <string name="contact">Contact</string>
     <string name="qr_reader">QRReader</string>
+    <string name="successfull_message_registerd_contact">"Registered %1$s"</string>
+    <string name="error_message_already_registered">Already registered.</string>
 </resources>
