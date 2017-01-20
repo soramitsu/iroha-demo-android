@@ -65,7 +65,6 @@ import io.soramitsu.examplepoint.view.fragment.AssetReceiveFragment;
 import io.soramitsu.examplepoint.view.fragment.AssetSenderFragment;
 import io.soramitsu.examplepoint.view.fragment.WalletFragment;
 import io.soramitsu.irohaandroid.model.Account;
-import io.soramitsu.irohaandroid.model.KeyPair;
 
 public class MainActivity extends AppCompatActivity {
     public static final String TAG = MainActivity.class.getSimpleName();
@@ -254,8 +253,7 @@ public class MainActivity extends AppCompatActivity {
                                             public void onClick(DialogInterface dialogInterface, int i) {
                                                 dialogInterface.dismiss();
                                                 Context c = getApplicationContext();
-                                                KeyPair.delete(c);
-                                                Account.delete(c);
+                                                IrohaApplication.deleteAllData(c);
                                                 navigator.navigateToRegisterActivity(c);
                                                 finish();
                                             }

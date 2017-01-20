@@ -32,6 +32,7 @@ import android.widget.Toast;
 
 import java.util.ArrayList;
 
+import io.soramitsu.examplepoint.IrohaApplication;
 import io.soramitsu.examplepoint.R;
 import io.soramitsu.examplepoint.databinding.FragmentWalletBinding;
 import io.soramitsu.examplepoint.model.TransactionHistory;
@@ -41,7 +42,6 @@ import io.soramitsu.examplepoint.view.WalletView;
 import io.soramitsu.examplepoint.view.activity.MainActivity;
 import io.soramitsu.examplepoint.view.adapter.TransactionListAdapter;
 import io.soramitsu.irohaandroid.exception.UserNotFoundException;
-import io.soramitsu.irohaandroid.model.Account;
 import io.soramitsu.irohaandroid.model.KeyPair;
 import io.soramitsu.irohaandroid.model.Transaction;
 
@@ -193,8 +193,7 @@ public class WalletFragment extends Fragment
                         public void onClick(DialogInterface dialogInterface, int i) {
                             dialogInterface.dismiss();
                             Context c = getContext();
-                            KeyPair.delete(c);
-                            Account.delete(c);
+                            IrohaApplication.deleteAllData(c);
                             Navigator.getInstance().navigateToRegisterActivity(c);
                             getActivity().finish();
                         }

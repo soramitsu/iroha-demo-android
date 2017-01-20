@@ -30,6 +30,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
+import io.soramitsu.examplepoint.IrohaApplication;
 import io.soramitsu.examplepoint.R;
 import io.soramitsu.examplepoint.databinding.FragmentAssetReceiveBinding;
 import io.soramitsu.examplepoint.navigator.Navigator;
@@ -37,8 +38,6 @@ import io.soramitsu.examplepoint.presenter.AssetReceivePresenter;
 import io.soramitsu.examplepoint.view.AssetReceiveView;
 import io.soramitsu.examplepoint.view.activity.MainActivity;
 import io.soramitsu.irohaandroid.exception.UserNotFoundException;
-import io.soramitsu.irohaandroid.model.Account;
-import io.soramitsu.irohaandroid.model.KeyPair;
 
 public class AssetReceiveFragment extends Fragment implements AssetReceiveView, MainActivity.MainActivityListener {
     public static final String TAG = AssetReceiveFragment.class.getSimpleName();
@@ -128,8 +127,7 @@ public class AssetReceiveFragment extends Fragment implements AssetReceiveView, 
                         public void onClick(DialogInterface dialogInterface, int i) {
                             dialogInterface.dismiss();
                             Context c = getContext();
-                            KeyPair.delete(c);
-                            Account.delete(c);
+                            IrohaApplication.deleteAllData(c);
                             Navigator.getInstance().navigateToRegisterActivity(c);
                             getActivity().finish();
                         }

@@ -33,6 +33,16 @@ public class Contact extends RealmObject {
         return realm.createObject(Contact.class, publicKey);
     }
 
+    public static void deleteAll(Realm realm) {
+        realm.executeTransaction(new Realm.Transaction() {
+            @Override
+            public void execute(Realm realm) {
+                RealmResults<Contact> results = realm.where(Contact.class).findAll();
+                results.deleteAllFromRealm();
+            }
+        });
+    }
+
     public static RealmResults<Contact> findAll(Realm realm) {
         return realm.where(Contact.class).findAll();
     }

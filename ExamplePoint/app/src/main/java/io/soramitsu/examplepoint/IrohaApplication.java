@@ -27,11 +27,32 @@ import com.crashlytics.android.Crashlytics;
 import io.fabric.sdk.android.Fabric;
 import io.realm.Realm;
 import io.realm.RealmConfiguration;
+import io.soramitsu.examplepoint.model.Contact;
 import io.soramitsu.irohaandroid.Iroha;
+import io.soramitsu.irohaandroid.model.Account;
+import io.soramitsu.irohaandroid.model.KeyPair;
 
 public class IrohaApplication extends Application {
 
     public String publicKeyForContactToSend;
+
+    public static String getVersionName(Context context) {
+        PackageManager pm = context.getPackageManager();
+        String versionName = "";
+        try {
+            PackageInfo packageInfo = pm.getPackageInfo(context.getPackageName(), 0);
+            versionName = packageInfo.versionName;
+        } catch (PackageManager.NameNotFoundException e) {
+            e.printStackTrace();
+        }
+        return versionName;
+    }
+
+    public static void deleteAllData(Context c) {
+        KeyPair.delete(c);
+        Account.delete(c);
+        Contact.deleteAll(Realm.getDefaultInstance());
+    }
 
     @Override
     public void onCreate() {
@@ -44,17 +65,5 @@ public class IrohaApplication extends Application {
         new Iroha.Builder()
                 .baseUrl("https://point-demo.iroha.tech")
                 .build();
-    }
-
-    public static String getVersionName(Context context) {
-        PackageManager pm = context.getPackageManager();
-        String versionName = "";
-        try {
-            PackageInfo packageInfo = pm.getPackageInfo(context.getPackageName(), 0);
-            versionName = packageInfo.versionName;
-        } catch (PackageManager.NameNotFoundException e) {
-            e.printStackTrace();
-        }
-        return versionName;
     }
 }
