@@ -25,6 +25,8 @@ import android.content.pm.PackageManager;
 import com.crashlytics.android.Crashlytics;
 
 import io.fabric.sdk.android.Fabric;
+import io.realm.Realm;
+import io.realm.RealmConfiguration;
 import io.soramitsu.irohaandroid.Iroha;
 
 public class IrohaApplication extends Application {
@@ -33,6 +35,10 @@ public class IrohaApplication extends Application {
     public void onCreate() {
         super.onCreate();
         Fabric.with(getApplicationContext(), new Crashlytics());
+        Realm.init(this);
+        RealmConfiguration realmConfig = new RealmConfiguration.Builder().build();
+        Realm.deleteRealm(realmConfig); // Delete Realm between app restarts.
+        Realm.setDefaultConfiguration(realmConfig);
         new Iroha.Builder()
                 .baseUrl("https://point-demo.iroha.tech")
                 .build();
