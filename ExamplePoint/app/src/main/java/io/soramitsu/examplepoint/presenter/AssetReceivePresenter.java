@@ -73,6 +73,7 @@ public class AssetReceivePresenter implements Presenter<AssetReceiveView> {
     private Runnable transactionRunnable;
 
     private String uuid;
+    private String alias;
     private String publicKey;
     private Bitmap qr;
 
@@ -196,6 +197,9 @@ public class AssetReceivePresenter implements Presenter<AssetReceiveView> {
         if (uuid == null || uuid.isEmpty()) {
             uuid = getUuid();
         }
+        if (alias == null || alias.isEmpty()) {
+            alias = getAlias();
+        }
 
         Iroha iroha = Iroha.getInstance();
         iroha.runAsyncTask(
@@ -270,6 +274,21 @@ public class AssetReceivePresenter implements Presenter<AssetReceiveView> {
         return uuid;
     }
 
+    @NotNull
+    private String getAlias() {
+        final Context context = assetReceiveView.getContext();
+        if (alias == null || alias.isEmpty()) {
+            try {
+                alias = Account.getAlias(context);
+            } catch (NoSuchPaddingException | UnrecoverableKeyException | NoSuchAlgorithmException
+                    | KeyStoreException | InvalidKeyException | IOException e) {
+                assetReceiveView.showError(ErrorMessageFactory.create(context, e), e);
+                return "";
+            }
+        }
+        return alias;
+    }
+
     private void generateQR() {
         try {
             if (qr == null) {
@@ -300,6 +319,7 @@ public class AssetReceivePresenter implements Presenter<AssetReceiveView> {
         final TransferQRParameter qrParams = new TransferQRParameter();
         qrParams.account = getPublicKey();
         qrParams.amount = getValueForReceiveAmount();
+        qrParams.alias = getAlias();
 
         return gson.toJson(qrParams, TransferQRParameter.class);
     }
