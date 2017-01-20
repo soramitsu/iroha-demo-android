@@ -8,6 +8,7 @@
     <string name="during_registration">Registration…</string>
     <string name="message_account_register_successful">Account registered!</string>
     <string name="placeholder_account_name">username:</string>
+    <string name="placeholder_contact_name">name:</string>
     <string name="transaction_history">Transaction</string>
     <string name="send">Send</string>
     <string name="receive">Receive</string>

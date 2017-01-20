@@ -30,22 +30,29 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
-import android.widget.Toast;
+import android.view.inputmethod.InputMethodManager;
 
 import io.soramitsu.examplepoint.R;
 import io.soramitsu.examplepoint.databinding.ActivityContactBinding;
 import io.soramitsu.examplepoint.model.Contact;
 import io.soramitsu.examplepoint.navigator.Navigator;
+import io.soramitsu.examplepoint.view.fragment.ContactFragment;
+import io.soramitsu.examplepoint.view.fragment.ContactListener;
 import io.soramitsu.examplepoint.view.fragment.ContactsListFragment;
+import io.soramitsu.examplepoint.view.fragment.ContactsListListener;
 import io.soramitsu.irohaandroid.callback.Callback;
 
-public class ContactActivity extends AppCompatActivity implements ContactsListFragment.ContactsListListener {
+public class ContactActivity extends AppCompatActivity
+        implements ContactsListListener, ContactListener {
     public static final String TAG = ContactActivity.class.getSimpleName();
 
     private ActivityContactBinding binding;
+    private InputMethodManager inputMethodManager;
 
     private ContactsListFragment contactsListFragment;
+    private ContactFragment contactFragment;
 
     public static Intent getCallingIntent(Context context) {
         Intent intent = new Intent(context, ContactActivity.class);
@@ -60,6 +67,7 @@ public class ContactActivity extends AppCompatActivity implements ContactsListFr
     }
 
     private void init(Bundle savedInstanceState) {
+        inputMethodManager = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
         binding = DataBindingUtil.setContentView(this, R.layout.activity_contact);
         initToolbar();
         initFragments(savedInstanceState);
@@ -80,18 +88,23 @@ public class ContactActivity extends AppCompatActivity implements ContactsListFr
             @Override
             public boolean onMenuItemClick(MenuItem item) {
                 if (item.getItemId() == R.id.action_qr_reader) {
-                    Navigator.getInstance().navigateToQRReaderActivity(getApplicationContext(), new Callback<String>() {
-                        @Override
-                        public void onSuccessful(String result) {
-                            // TODO アドレス帳に追加する
-                            Toast.makeText(getApplicationContext(), result, Toast.LENGTH_SHORT).show();
-                        }
+                    Navigator.getInstance().navigateToQRReaderActivity(getApplicationContext(),
+                            new Callback<String>() {
+                                @Override
+                                public void onSuccessful(String result) {
+                                    FragmentManager manager = getSupportFragmentManager();
+                                    Fragment currentFragment = manager.findFragmentById(R.id.container);
+                                    if (currentFragment instanceof ContactActivityListener) {
+                                        ContactActivityListener listener = (ContactActivityListener) currentFragment;
+                                        listener.onQrReadeSuccessful(result);
+                                    }
+                                }
 
-                        @Override
-                        public void onFailure(Throwable throwable) {
-                            Log.e(TAG, "onFailure: ", throwable);
-                        }
-                    });
+                                @Override
+                                public void onFailure(Throwable throwable) {
+                                    Log.e(TAG, "onFailure: ", throwable);
+                                }
+                            });
                     return true;
                 }
                 return false;
@@ -102,6 +115,7 @@ public class ContactActivity extends AppCompatActivity implements ContactsListFr
     private void initFragments(Bundle savedInstanceState) {
         final FragmentManager manager = getSupportFragmentManager();
         contactsListFragment = (ContactsListFragment) manager.findFragmentByTag(ContactsListFragment.TAG);
+        contactFragment = (ContactFragment) manager.findFragmentByTag(ContactFragment.TAG);
 
         if (contactsListFragment == null) {
             contactsListFragment = ContactsListFragment.newInstance();
@@ -135,8 +149,58 @@ public class ContactActivity extends AppCompatActivity implements ContactsListFr
     }
 
     @Override
+    public void onBackPressed() {
+        final Fragment currentFragment = getCurrentFragment();
+        if (currentFragment instanceof ContactFragment) {
+            gotoContactsList();
+            return;
+        }
+        super.onBackPressed();
+    }
+
+    @Override
+    public boolean dispatchTouchEvent(MotionEvent ev) {
+        Log.d(TAG, "dispatchTouchEvent: ");
+        inputMethodManager.hideSoftInputFromWindow(
+                binding.getRoot().getWindowToken(),
+                InputMethodManager.HIDE_NOT_ALWAYS
+        );
+        binding.getRoot().requestFocus();
+        return super.dispatchTouchEvent(ev);
+    }
+
+    @Override
     public void onContactsListItemClickListener(Contact target) {
-        // TODO 編集画面に遷移する
-        Toast.makeText(getApplicationContext(), target.publicKey, Toast.LENGTH_SHORT).show();
+        gotoContact(target);
+    }
+
+    @Override
+    public void onContactDeleteSuccessful() {
+        gotoContactsList();
+    }
+
+    private Fragment getCurrentFragment() {
+        return getSupportFragmentManager().findFragmentById(R.id.container);
+    }
+
+    private void gotoContact(Contact target) {
+        contactFragment = ContactFragment.newInstance(target.publicKey, target.alias);
+        switchFragment(contactFragment, ContactFragment.TAG);
+        binding.toolbar.setNavigationOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                gotoContactsList();
+            }
+        });
+    }
+
+    private void gotoContactsList() {
+        switchFragment(contactsListFragment, ContactsListFragment.TAG);
+        binding.toolbar.setNavigationOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                finish();
+            }
+        });
     }
 }

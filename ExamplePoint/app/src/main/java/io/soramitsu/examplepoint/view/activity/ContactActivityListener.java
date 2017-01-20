@@ -15,12 +15,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package io.soramitsu.examplepoint.view;
+package io.soramitsu.examplepoint.view.activity;
 
-import io.soramitsu.examplepoint.view.fragment.ContactsListListener;
-
-public interface ContactsListView extends View {
-    void showError(String error, Throwable throwable);
-
-    ContactsListListener getContactsListListener();
+public interface ContactActivityListener {
+    void onQrReadeSuccessful(String result);
 }

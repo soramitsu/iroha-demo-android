@@ -24,31 +24,26 @@ import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
 
-import io.realm.OrderedRealmCollection;
-import io.realm.Realm;
 import io.realm.RealmResults;
 import io.soramitsu.examplepoint.R;
 import io.soramitsu.examplepoint.databinding.FragmentContactsListBinding;
 import io.soramitsu.examplepoint.model.Contact;
+import io.soramitsu.examplepoint.presenter.ContactsListPresenter;
 import io.soramitsu.examplepoint.view.ContactsListView;
+import io.soramitsu.examplepoint.view.activity.ContactActivityListener;
 import io.soramitsu.examplepoint.view.adapter.ContactsListAdapter;
 
-public class ContactsListFragment extends Fragment implements ContactsListView {
+public class ContactsListFragment extends Fragment
+        implements ContactsListView, ContactActivityListener {
+
     public static final String TAG = ContactsListFragment.class.getSimpleName();
 
-    private FragmentContactsListBinding binding;
-    private ContactsListAdapter contactsListAdapter;
+    private ContactsListPresenter contactsListPresenter = new ContactsListPresenter();
 
-    private Realm realm;
-    private RealmResults<Contact> contacts;
+    private FragmentContactsListBinding binding;
 
     private ContactsListListener contactsListListener;
-
-    public interface ContactsListListener {
-        void onContactsListItemClickListener(Contact target);
-    }
 
     public static ContactsListFragment newInstance() {
         ContactsListFragment fragment = new ContactsListFragment();
@@ -60,6 +55,8 @@ public class ContactsListFragment extends Fragment implements ContactsListView {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        contactsListPresenter.setView(this);
+        contactsListPresenter.onCreate();
     }
 
     @Override
@@ -72,6 +69,8 @@ public class ContactsListFragment extends Fragment implements ContactsListView {
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         binding = DataBindingUtil.bind(view);
+        binding.contactList.setEmptyView(binding.emptyView);
+        binding.contactList.setOnItemClickListener(contactsListPresenter.onItemClicked());
     }
 
     @Override
@@ -82,52 +81,36 @@ public class ContactsListFragment extends Fragment implements ContactsListView {
         }
         contactsListListener = (ContactsListListener) getActivity();
 
-        realm = Realm.getDefaultInstance();
-        contacts = realm.where(Contact.class).findAll();
-        contactsListAdapter = new ContactsListAdapter(getContext(), contacts);
+        RealmResults<Contact> contacts = contactsListPresenter.findAll();
+        ContactsListAdapter contactsListAdapter = new ContactsListAdapter(getContext(), contacts);
+
+        binding.contactList.setAdapter(contactsListAdapter);
     }
 
     @Override
     public void onStart() {
         super.onStart();
-
-//        if (contacts.size() == 0) {
-//            // Create mock
-//            realm.beginTransaction();
-//            Contact contact = realm.createObject(Contact.class, "hogehogehogehoge");
-//            contact.alias = "alias";
-//            realm.commitTransaction();
-//        }
-
-        binding.contactList.setEmptyView(binding.emptyView);
-        binding.contactList.setAdapter(contactsListAdapter);
-        binding.contactList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                Contact target = (Contact) adapterView.getItemAtPosition(i);
-                contactsListListener.onContactsListItemClickListener(target);
-            }
-        });
+        contactsListPresenter.onStart();
     }
 
     @Override
     public void onStop() {
+        contactsListPresenter.onStop();
         super.onStop();
     }
 
     @Override
     public void showError(String error, Throwable throwable) {
+        // nothing
     }
 
     @Override
-    public void renderContacts(OrderedRealmCollection<Contact> contacts) {
+    public ContactsListListener getContactsListListener() {
+        return contactsListListener;
     }
 
     @Override
-    public void showProgress() {
-    }
-
-    @Override
-    public void hideProgress() {
+    public void onQrReadeSuccessful(String result) {
+        contactsListPresenter.qrReadSuccessful(result);
     }
 }

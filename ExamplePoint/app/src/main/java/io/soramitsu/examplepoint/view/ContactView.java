@@ -17,10 +17,16 @@ limitations under the License.
 
 package io.soramitsu.examplepoint.view;
 
-import io.soramitsu.examplepoint.view.fragment.ContactsListListener;
+import android.app.Activity;
 
-public interface ContactsListView extends View {
+public interface ContactView extends View {
+    Activity getActivity();
+
     void showError(String error, Throwable throwable);
 
-    ContactsListListener getContactsListListener();
+    void showSnackbar(String message);
+
+    String getAlias();
+
+    void onContactDeleteSuccessful();
 }
