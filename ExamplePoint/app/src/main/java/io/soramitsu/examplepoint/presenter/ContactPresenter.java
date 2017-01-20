@@ -124,8 +124,8 @@ public class ContactPresenter implements Presenter<ContactView> {
         return new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                // TODO 送金画面へコンタクト情報を送る
-                contactView.showSnackbar("Send!");
+                contactView.setPublicKeyForContactToSend(publicKey);
+                contactView.finish();
             }
         };
     }

@@ -28,6 +28,7 @@ import android.view.ViewGroup;
 
 import org.jetbrains.annotations.NotNull;
 
+import io.soramitsu.examplepoint.IrohaApplication;
 import io.soramitsu.examplepoint.R;
 import io.soramitsu.examplepoint.databinding.FragmentContactBinding;
 import io.soramitsu.examplepoint.presenter.ContactPresenter;
@@ -109,6 +110,11 @@ public class ContactFragment extends Fragment
     }
 
     @Override
+    public void finish() {
+        getActivity().finish();
+    }
+
+    @Override
     public void showError(String error, Throwable throwable) {
         // nothing
     }
@@ -121,6 +127,11 @@ public class ContactFragment extends Fragment
     @Override
     public String getAlias() {
         return binding.contactName.getText().toString();
+    }
+
+    @Override
+    public void setPublicKeyForContactToSend(String publicKey) {
+        ((IrohaApplication)getActivity().getApplication()).publicKeyForContactToSend = publicKey;
     }
 
     @Override

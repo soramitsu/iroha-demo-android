@@ -27,6 +27,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import io.soramitsu.examplepoint.IrohaApplication;
 import io.soramitsu.examplepoint.R;
 import io.soramitsu.examplepoint.databinding.FragmentAssetSenderBinding;
 import io.soramitsu.examplepoint.navigator.Navigator;
@@ -82,6 +83,13 @@ public class AssetSenderFragment extends Fragment
     public void onStart() {
         super.onStart();
         assetSenderPresenter.onStart();
+
+        IrohaApplication irohaApplication = (IrohaApplication) getActivity().getApplication();
+        if (irohaApplication.publicKeyForContactToSend != null) {
+            binding.receiver.setText(irohaApplication.publicKeyForContactToSend);
+            irohaApplication.publicKeyForContactToSend = null;
+        }
+
         if (binding.receiver.getText().length() != 0) {
             Log.d(TAG, "onStart: " + binding.receiver.getText().toString());
             afterQRReadViewState(

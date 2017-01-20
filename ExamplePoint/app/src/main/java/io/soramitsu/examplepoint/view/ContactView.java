@@ -22,6 +22,8 @@ import android.app.Activity;
 public interface ContactView extends View {
     Activity getActivity();
 
+    void finish();
+
     void showError(String error, Throwable throwable);
 
     void showSnackbar(String message);
@@ -29,4 +31,6 @@ public interface ContactView extends View {
     String getAlias();
 
     void onContactDeleteSuccessful();
+
+    void setPublicKeyForContactToSend(String publicKey);
 }

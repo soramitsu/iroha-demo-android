@@ -56,6 +56,7 @@ import java.security.UnrecoverableKeyException;
 
 import javax.crypto.NoSuchPaddingException;
 
+import io.soramitsu.examplepoint.IrohaApplication;
 import io.soramitsu.examplepoint.R;
 import io.soramitsu.examplepoint.databinding.ActivityMainBinding;
 import io.soramitsu.examplepoint.exception.ErrorMessageFactory;
@@ -115,6 +116,21 @@ public class MainActivity extends AppCompatActivity {
         }
 
         init(savedInstanceState);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        IrohaApplication irohaApplication = (IrohaApplication) getApplication();
+        if (irohaApplication.publicKeyForContactToSend != null) {
+            transitionTo(
+                    assetSenderFragment,
+                    AssetSenderFragment.TAG,
+                    R.string.send,
+                    NAVIGATION_ITEM_SEND
+            );
+        }
     }
 
     @Override

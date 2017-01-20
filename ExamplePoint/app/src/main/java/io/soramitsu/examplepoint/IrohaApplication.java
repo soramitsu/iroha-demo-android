@@ -32,6 +32,8 @@ import io.soramitsu.irohaandroid.Iroha;
 
 public class IrohaApplication extends Application {
 
+    public String publicKeyForContactToSend;
+
     @Override
     public void onCreate() {
         super.onCreate();
