@@ -4,7 +4,7 @@
     <group android:id="@+id/menu_first_group">
         <item
             android:id="@+id/action_contact"
-            android:icon="@drawable/icon_qr"
+            android:icon="@drawable/ic_contacts_white_24dp"
             android:title="contact"
             app:showAsAction="always" />
     </group>
