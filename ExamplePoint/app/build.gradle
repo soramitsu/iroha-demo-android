@@ -35,6 +35,9 @@ android {
             testCoverageEnabled true
 
             manifestPlaceholders = buildTypes.debug.manifestPlaceholders
+
+            applicationIdSuffix = '.debug'
+            versionNameSuffix = 'd'
         }
         release {
             minifyEnabled false
