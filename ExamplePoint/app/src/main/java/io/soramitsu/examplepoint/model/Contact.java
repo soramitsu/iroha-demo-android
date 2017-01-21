@@ -23,7 +23,7 @@ import io.realm.RealmResults;
 import io.realm.annotations.PrimaryKey;
 
 public class Contact extends RealmObject {
-    public static final String FIELD_NAME_PUBLIC_KEY = "publicKey";
+    private static final String FIELD_NAME_PUBLIC_KEY = "publicKey";
 
     @PrimaryKey
     public String publicKey;
