@@ -3,19 +3,26 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <LinearLayout
+    <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:orientation="vertical"
         android:padding="8dp">
+
+        <TextView
+            android:id="@+id/label_contact_public_key"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/label_title_public_key"
+            android:textColor="@color/secondary_text"
+            android:textSize="12sp" />
 
         <TextView
             android:id="@+id/contact_public_key"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_below="@id/label_contact_public_key"
             android:focusable="true"
             android:focusableInTouchMode="true"
-            android:text="ghoahepagds;jfg/lasjdfli-egs="
             android:textColor="@color/primary_text"
             android:textSize="20sp"
             tools:text="publicKey" />
@@ -26,9 +33,11 @@
             android:id="@+id/contact_name_container"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_below="@id/contact_public_key"
             android:layout_marginBottom="8dp"
-            android:textColorHint="@color/primary_text"
-            app:errorTextAppearance="@style/EditTextErrorAppearance"
+            android:layout_marginTop="8dp"
+            android:textColorHint="@color/secondary_text"
+            app:errorTextAppearance="@style/ContactEditTextErrorAppearance"
             app:hintTextAppearance="@style/ContactEditTextHint">
 
             <EditText
@@ -36,36 +45,44 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:hint="@string/placeholder_contact_name"
+                android:inputType="text"
                 android:maxLength="10"
                 android:maxLines="1"
-                android:textColor="@color/primary_text"
-                android:theme="@style/ContactEditTextColorControl" />
+                android:textColor="@color/primary_text" />
         </android.support.design.widget.TextInputLayout>
 
         <RelativeLayout
             android:id="@+id/button_container"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content"
+            android:layout_below="@id/contact_name_container">
 
             <LinearLayout
                 android:id="@+id/buttons"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
                 android:weightSum="2">
 
                 <Button
                     android:id="@+id/update_button"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
+                    android:layout_marginEnd="4dp"
                     android:layout_weight="1"
-                    android:text="update" />
+                    android:background="@drawable/shape_rounded_corners_5dp"
+                    android:text="@string/button_update"
+                    android:textColor="@color/white" />
 
                 <Button
                     android:id="@+id/delete_button"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
+                    android:layout_marginStart="4dp"
                     android:layout_weight="1"
-                    android:text="delete" />
+                    android:background="@drawable/shape_rounded_corners_5dp"
+                    android:text="@string/button_delete"
+                    android:textColor="@color/white" />
 
             </LinearLayout>
 
@@ -77,5 +94,5 @@
                 android:background="@drawable/button_send" />
         </RelativeLayout>
 
-    </LinearLayout>
+    </RelativeLayout>
 </layout>

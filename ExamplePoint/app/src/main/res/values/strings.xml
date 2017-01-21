@@ -46,4 +46,7 @@
     <string name="qr_reader">QRReader</string>
     <string name="successfull_message_registerd_contact">"Registered %1$s"</string>
     <string name="error_message_already_registered">Already registered.</string>
+    <string name="label_title_public_key">PublicKey</string>
+    <string name="button_update">update</string>
+    <string name="button_delete">delete</string>
 </resources>
