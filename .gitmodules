@@ -1,0 +1,3 @@
+[submodule "ExamplePoint"]
+	path = ExamplePoint
+	url = git@github.com:hyperledger/iroha-android.git
