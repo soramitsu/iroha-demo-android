@@ -18,12 +18,12 @@ android {
     apply from: './debug.gradle', to: android
     apply from: './release.gradle', to: android
 
-    compileSdkVersion 25
+    compileSdkVersion 26
     buildToolsVersion "25.0.3"
     defaultConfig {
         applicationId "io.soramitsu.examplepoint"
         minSdkVersion 19
-        targetSdkVersion 25
+        targetSdkVersion 26
         versionCode 8
         versionName "1.1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
