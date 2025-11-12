@@ -18,11 +18,12 @@ limitations under the License.
 package io.soramitsu.examplepoint.view.adapter;
 
 import android.content.Context;
-import android.databinding.DataBindingUtil;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+
+import androidx.databinding.DataBindingUtil;
 
 import java.util.ArrayList;
 import java.util.Collections;

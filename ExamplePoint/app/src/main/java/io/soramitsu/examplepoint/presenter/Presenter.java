@@ -17,7 +17,7 @@ limitations under the License.
 
 package io.soramitsu.examplepoint.presenter;
 
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 import io.soramitsu.examplepoint.view.View;
 

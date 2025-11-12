@@ -18,13 +18,12 @@ limitations under the License.
 package io.soramitsu.examplepoint.presenter;
 
 import android.content.Context;
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
 
-import com.crashlytics.android.Crashlytics;
 import com.google.gson.Gson;
 
 import org.jetbrains.annotations.NotNull;
@@ -45,6 +44,7 @@ import io.soramitsu.examplepoint.exception.ReceiverNotFoundException;
 import io.soramitsu.examplepoint.exception.SelfSendCanNotException;
 import io.soramitsu.examplepoint.model.QRType;
 import io.soramitsu.examplepoint.model.TransferQRParameter;
+import io.soramitsu.examplepoint.util.CrashReporter;
 import io.soramitsu.examplepoint.util.NetworkUtil;
 import io.soramitsu.examplepoint.view.AssetSenderView;
 import io.soramitsu.irohaandroid.Iroha;
@@ -131,7 +131,7 @@ public class AssetSenderPresenter implements Presenter<AssetSenderView> {
                     params = new Gson().fromJson(result, TransferQRParameter.class);
                 } catch (Exception e) {
                     Log.e(TAG, "setOnResult: json could not parse to object!");
-                    Crashlytics.log(Log.ERROR, AssetSenderPresenter.TAG, e.getMessage());
+                    CrashReporter.logError(AssetSenderPresenter.TAG, "Failed to parse QR payload", e);
                     assetSenderView.showError(ErrorMessageFactory.create(context, new IllegalQRCodeException()));
                     return;
                 }
@@ -145,7 +145,7 @@ public class AssetSenderPresenter implements Presenter<AssetSenderView> {
             @Override
             public void onFailure(Throwable throwable) {
                 Log.e(TAG, "onFailure: ", throwable);
-                Crashlytics.log(Log.ERROR, AssetSenderPresenter.TAG, throwable.getMessage());
+                CrashReporter.logError(AssetSenderPresenter.TAG, throwable);
             }
         };
     }
@@ -237,7 +237,7 @@ public class AssetSenderPresenter implements Presenter<AssetSenderView> {
                 assetSenderView.hideProgress();
 
                 if (NetworkUtil.isOnline(c)) {
-                    Crashlytics.log(Log.ERROR, AssetSenderPresenter.TAG, throwable.getMessage());
+                    CrashReporter.logError(AssetSenderPresenter.TAG, throwable);
                     assetSenderView.showError(ErrorMessageFactory.create(c, throwable));
                 } else {
                     assetSenderView.showError(ErrorMessageFactory.create(c, new NetworkNotConnectedException()));
@@ -265,7 +265,7 @@ public class AssetSenderPresenter implements Presenter<AssetSenderView> {
             } catch (NoSuchPaddingException | UnrecoverableKeyException | NoSuchAlgorithmException
                     | KeyStoreException | InvalidKeyException | IOException e) {
                 Log.e(TAG, "getKeyPair: ", e);
-                Crashlytics.log(Log.ERROR, AssetSenderPresenter.TAG, e.getMessage());
+                CrashReporter.logError(AssetSenderPresenter.TAG, e);
                 assetSenderView.showError(ErrorMessageFactory.create(context, e));
                 return new KeyPair("", "");
             }

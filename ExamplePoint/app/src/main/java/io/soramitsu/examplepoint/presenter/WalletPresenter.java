@@ -19,13 +19,12 @@ package io.soramitsu.examplepoint.presenter;
 
 import android.content.Context;
 import android.os.Handler;
-import android.support.annotation.NonNull;
-import android.support.v4.widget.SwipeRefreshLayout;
+import android.os.Looper;
+import androidx.annotation.NonNull;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 import android.util.Log;
 import android.view.View;
 import android.widget.AbsListView;
-
-import com.crashlytics.android.Crashlytics;
 
 import java.io.IOException;
 import java.security.InvalidKeyException;
@@ -39,6 +38,7 @@ import javax.crypto.NoSuchPaddingException;
 import io.soramitsu.examplepoint.exception.ErrorMessageFactory;
 import io.soramitsu.examplepoint.exception.NetworkNotConnectedException;
 import io.soramitsu.examplepoint.model.TransactionHistory;
+import io.soramitsu.examplepoint.util.CrashReporter;
 import io.soramitsu.examplepoint.util.NetworkUtil;
 import io.soramitsu.examplepoint.view.WalletView;
 import io.soramitsu.examplepoint.view.fragment.WalletFragment;
@@ -73,7 +73,7 @@ public class WalletPresenter implements Presenter<WalletView> {
 
     @Override
     public void onStart() {
-        refreshHandler = new Handler();
+        refreshHandler = new Handler(Looper.getMainLooper());
         transactionRunnable = new Runnable() {
             @Override
             public void run() {
@@ -205,7 +205,7 @@ public class WalletPresenter implements Presenter<WalletView> {
 
         final Context context = walletView.getContext();
         if (NetworkUtil.isOnline(walletView.getContext())) {
-            Crashlytics.log(Log.ERROR, WalletPresenter.TAG, throwable.getMessage());
+            CrashReporter.logError(WalletPresenter.TAG, throwable);
             walletView.showError(ErrorMessageFactory.create(context, throwable), throwable);
         } else {
             walletView.showError(ErrorMessageFactory.create(context, new NetworkNotConnectedException()), throwable);
@@ -268,7 +268,7 @@ public class WalletPresenter implements Presenter<WalletView> {
             uuid = Account.getUuid(context);
         } catch (NoSuchPaddingException | UnrecoverableKeyException | NoSuchAlgorithmException
                 | KeyStoreException | InvalidKeyException | IOException e) {
-            Crashlytics.log(Log.ERROR, AssetSenderPresenter.TAG, e.getMessage());
+            CrashReporter.logError(WalletPresenter.TAG, e);
             walletView.showError(ErrorMessageFactory.create(context, e), e);
             return null;
         }

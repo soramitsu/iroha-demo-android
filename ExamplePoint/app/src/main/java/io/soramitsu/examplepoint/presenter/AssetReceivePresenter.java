@@ -23,15 +23,15 @@ import android.content.ClipboardManager;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.os.Handler;
-import android.support.annotation.NonNull;
-import android.support.v4.widget.SwipeRefreshLayout;
+import android.os.Looper;
+import androidx.annotation.NonNull;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
 
-import com.crashlytics.android.Crashlytics;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.zxing.WriterException;
@@ -50,6 +50,7 @@ import io.soramitsu.examplepoint.R;
 import io.soramitsu.examplepoint.exception.ErrorMessageFactory;
 import io.soramitsu.examplepoint.exception.NetworkNotConnectedException;
 import io.soramitsu.examplepoint.model.TransferQRParameter;
+import io.soramitsu.examplepoint.util.CrashReporter;
 import io.soramitsu.examplepoint.util.NetworkUtil;
 import io.soramitsu.examplepoint.view.AssetReceiveView;
 import io.soramitsu.irohaandroid.Iroha;
@@ -88,7 +89,7 @@ public class AssetReceivePresenter implements Presenter<AssetReceiveView> {
 
     @Override
     public void onStart() {
-        refreshHandler = new Handler();
+        refreshHandler = new Handler(Looper.getMainLooper());
         transactionRunnable = new Runnable() {
             @Override
             public void run() {
@@ -226,7 +227,7 @@ public class AssetReceivePresenter implements Presenter<AssetReceiveView> {
 
                 Context c = assetReceiveView.getContext();
                 if (NetworkUtil.isOnline(c)) {
-                    Crashlytics.log(Log.ERROR, AssetReceivePresenter.TAG, throwable.getMessage());
+                    CrashReporter.logError(AssetReceivePresenter.TAG, throwable);
                     assetReceiveView.showError(ErrorMessageFactory.create(c, throwable), throwable);
                 } else {
                     assetReceiveView.showError(ErrorMessageFactory.create(c, new NetworkNotConnectedException()), throwable);

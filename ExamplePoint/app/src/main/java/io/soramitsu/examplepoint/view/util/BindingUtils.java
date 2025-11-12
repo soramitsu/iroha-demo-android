@@ -18,12 +18,13 @@ limitations under the License.
 package io.soramitsu.examplepoint.view.util;
 
 import android.content.Context;
-import android.databinding.BindingAdapter;
-import android.databinding.BindingMethod;
-import android.databinding.BindingMethods;
 import android.graphics.drawable.Drawable;
 import android.view.View;
 import android.widget.TextView;
+
+import androidx.databinding.BindingAdapter;
+import androidx.databinding.BindingMethod;
+import androidx.databinding.BindingMethods;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 import io.soramitsu.examplepoint.R;

@@ -21,10 +21,10 @@ import android.app.Application;
 import android.content.Context;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.os.Build;
+import android.util.Log;
 
-import com.crashlytics.android.Crashlytics;
-
-import io.fabric.sdk.android.Fabric;
+import io.soramitsu.examplepoint.util.CrashReporter;
 import io.soramitsu.irohaandroid.Iroha;
 
 public class IrohaApplication extends Application {
@@ -32,7 +32,7 @@ public class IrohaApplication extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
-        Fabric.with(getApplicationContext(), new Crashlytics());
+        CrashReporter.init(this);
         new Iroha.Builder()
                 .baseUrl("https://point-demo.iroha.tech")
                 .build();
@@ -42,10 +42,19 @@ public class IrohaApplication extends Application {
         PackageManager pm = context.getPackageManager();
         String versionName = "";
         try {
-            PackageInfo packageInfo = pm.getPackageInfo(context.getPackageName(), 0);
+            PackageInfo packageInfo;
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                packageInfo = pm.getPackageInfo(
+                        context.getPackageName(),
+                        PackageManager.PackageInfoFlags.of(0)
+                );
+            } else {
+                packageInfo = pm.getPackageInfo(context.getPackageName(), 0);
+            }
             versionName = packageInfo.versionName;
         } catch (PackageManager.NameNotFoundException e) {
-            e.printStackTrace();
+            Log.e("IrohaApplication", "Unable to read versionName", e);
+            CrashReporter.logError("IrohaApplication", "Unable to read versionName", e);
         }
         return versionName;
     }

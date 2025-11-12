@@ -19,13 +19,14 @@ package io.soramitsu.examplepoint.view.customview;
 
 import android.annotation.TargetApi;
 import android.content.Context;
-import android.databinding.DataBindingUtil;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.GridLayout;
+
+import androidx.databinding.DataBindingUtil;
+import androidx.gridlayout.widget.GridLayout;
 
 import io.soramitsu.examplepoint.R;
 import io.soramitsu.examplepoint.databinding.ViewSimpleCalculatorKeyboardBinding;
