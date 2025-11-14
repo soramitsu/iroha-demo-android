@@ -80,4 +80,19 @@
         <item name="android:background">@color/white</item>
         <item name="android:textColor">@color/red600</item>
     </style>
+
+    <style name="SoraNexusRegistrationInputContainer" parent="Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+        <item name="android:layout_marginBottom">8dp</item>
+        <item name="hintTextColor">@color/white</item>
+        <item name="android:textColorHint">@color/white</item>
+        <item name="boxStrokeColor">@color/white</item>
+        <item name="boxStrokeWidth">1dp</item>
+        <item name="android:theme">@style/EditTextColorControl</item>
+    </style>
+
+    <style name="SoraNexusRegistrationEditText" parent="@style/Widget.MaterialComponents.TextInputEditText.OutlinedBox">
+        <item name="android:textColor">@color/white</item>
+        <item name="android:textColorHint">@color/white</item>
+        <item name="android:theme">@style/EditTextColorControl</item>
+    </style>
 </resources>

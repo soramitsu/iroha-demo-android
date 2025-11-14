@@ -19,26 +19,23 @@ package io.soramitsu.examplepoint.view;
 
 import android.graphics.Bitmap;
 
-public interface AssetReceiveView extends View {
+import java.util.List;
+
+import io.soramitsu.examplepoint.sdk.model.AccountAsset;
+import io.soramitsu.examplepoint.sdk.model.AccountShareInfo;
+
+public interface AssetReceiveView extends LoadingView {
     boolean isRefreshing();
 
     void setRefreshing(boolean refreshing);
 
-    void showError(String error, Throwable throwable);
+    void showError(String error);
 
-    String getAmount();
+    void renderShareInfo(AccountShareInfo info);
 
-    void setAmount(String amount);
+    void renderAssets(List<AccountAsset> assets);
 
-    String getPublicKey();
+    void showQr(Bitmap qrBitmap);
 
-    void setPublicKey(String publicKey);
-
-    void invalidate();
-
-    void setQR(Bitmap qr);
-
-    String getHasAssetValue();
-
-    void setHasAssetValue(String value);
+    void promptReRegistration();
 }

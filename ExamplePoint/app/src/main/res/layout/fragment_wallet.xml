@@ -1,58 +1,29 @@
 <?xml version="1.0" encoding="utf-8"?>
-<layout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools">
+<layout xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
-        android:id="@+id/swipe_refresh"
+    <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="match_parent">
 
-        <LinearLayout
+        <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+            android:id="@+id/swipe_refresh"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:orientation="vertical">
+            android:layout_height="match_parent">
 
-            <TextView
-                android:id="@+id/pocket_money"
-                android:layout_width="match_parent"
-                android:layout_height="80dp"
-                android:background="@color/colorPrimary"
-                android:gravity="center"
-                android:textColor="@color/white"
-                android:textSize="32sp"
-                tools:text="4500 iroha" />
-
-            <androidx.core.widget.ContentLoadingProgressBar
-                android:id="@+id/progress_bar"
-                style="?android:attr/progressBarStyleLarge"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:layout_gravity="center"
-                android:visibility="gone" />
-
-            <ListView
-                android:id="@+id/transaction_list"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
-
-            <LinearLayout
-                android:id="@+id/empty_view"
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/wallet_list"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:gravity="center"
-                android:orientation="vertical"
-                tools:visibility="visible">
+                android:clipToPadding="false"
+                android:padding="16dp" />
+        </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
-                <TextView
-                    android:id="@+id/empty_text"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:gravity="center"
-                    android:text="@string/transaction_history_not_found" />
-            </LinearLayout>
-
-        </LinearLayout>
-
-    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+        <androidx.core.widget.ContentLoadingProgressBar
+            android:id="@+id/progress_bar"
+            style="?android:attr/progressBarStyleLarge"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:visibility="gone" />
+    </FrameLayout>
 </layout>

@@ -6,15 +6,16 @@ def versions = [
         appcompat            : '1.6.1',
         core                 : '1.13.1',
         material             : '1.12.0',
+        lifecycleViewModel   : '2.8.4',
         cardview             : '1.0.0',
         gridlayout           : '1.0.0',
         drawerlayout         : '1.1.1',
         swiperefreshlayout   : '1.1.0',
         circleImageView      : '3.1.0',
         aboutLibraries       : '5.9.1',
-        irohaAndroid         : '0.1.0-SNAPSHOT',
         gson                 : '2.10.1',
         jetbrainsAnnotations : '24.0.1',
+        securityCrypto       : '1.1.0-alpha06',
         junit                : '4.13.2',
         androidxTestExt      : '1.1.5',
         espresso             : '3.5.1',
@@ -84,6 +85,7 @@ dependencies {
     implementation "androidx.appcompat:appcompat:${versions.appcompat}"
     implementation "androidx.core:core:${versions.core}"
     implementation "com.google.android.material:material:${versions.material}"
+    implementation "androidx.lifecycle:lifecycle-viewmodel:${versions.lifecycleViewModel}"
     implementation "androidx.cardview:cardview:${versions.cardview}"
     implementation "androidx.gridlayout:gridlayout:${versions.gridlayout}"
     implementation "androidx.drawerlayout:drawerlayout:${versions.drawerlayout}"
@@ -94,6 +96,9 @@ dependencies {
     implementation "org.jetbrains:annotations:${versions.jetbrainsAnnotations}"
     implementation "com.squareup.okhttp3:okhttp:4.12.0"
     implementation "org.bouncycastle:bcprov-jdk18on:1.78.1"
+    implementation "androidx.security:security-crypto:${versions.securityCrypto}"
+    implementation "com.google.zxing:core:3.5.1"
+    implementation "com.journeyapps:zxing-android-embedded:4.3.0"
 
     androidTestImplementation "androidx.test.ext:junit:${versions.androidxTestExt}"
     androidTestImplementation "androidx.test:runner:${versions.androidxTestRunner}"

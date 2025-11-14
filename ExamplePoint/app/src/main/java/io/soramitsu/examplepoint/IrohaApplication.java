@@ -25,7 +25,6 @@ import android.os.Build;
 import android.util.Log;
 
 import io.soramitsu.examplepoint.util.CrashReporter;
-import io.soramitsu.irohaandroid.Iroha;
 
 public class IrohaApplication extends Application {
 
@@ -33,9 +32,6 @@ public class IrohaApplication extends Application {
     public void onCreate() {
         super.onCreate();
         CrashReporter.init(this);
-        new Iroha.Builder()
-                .baseUrl("https://point-demo.iroha.tech")
-                .build();
     }
 
     public static String getVersionName(Context context) {

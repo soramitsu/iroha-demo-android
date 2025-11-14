@@ -4,6 +4,7 @@
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.CAMERA" />
 
     <application
         android:name=".IrohaApplication"
@@ -28,6 +29,11 @@
         <activity
             android:name=".view.activity.MainActivity"
             android:screenOrientation="portrait" />
+        <activity
+            android:name=".view.activity.QrScannerActivity"
+            android:exported="false"
+            android:screenOrientation="portrait"
+            android:theme="@style/AppTheme.NoActionBar" />
     </application>
 
 </manifest>

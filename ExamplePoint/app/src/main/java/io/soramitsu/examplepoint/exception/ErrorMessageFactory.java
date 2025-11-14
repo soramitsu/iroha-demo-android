@@ -22,9 +22,9 @@ import android.content.Context;
 import com.google.zxing.WriterException;
 
 import io.soramitsu.examplepoint.R;
-import io.soramitsu.irohaandroid.exception.AccountDuplicateException;
-import io.soramitsu.irohaandroid.exception.HttpBadRequestException;
-import io.soramitsu.irohaandroid.exception.UserNotFoundException;
+import io.soramitsu.examplepoint.network.ToriiException;
+
+import org.hyperledger.iroha.android.address.AccountAddress.AccountAddressException;
 
 public class ErrorMessageFactory {
 
@@ -32,34 +32,30 @@ public class ErrorMessageFactory {
     }
 
     public static String create(Context context, Throwable exception, String... params) {
-        String message;
-
-        if (exception instanceof UserNotFoundException) {
-            message = context.getString(R.string.error_message_user_not_found);
-        } else if (exception instanceof AccountDuplicateException) {
-            message = context.getString(R.string.error_message_account_duplicate);
-        } else if (exception instanceof LargeNumberOfDigitsException) {
-            message = context.getString(R.string.error_message_large_number_of_digits);
-        } else if (exception instanceof IllegalQRCodeException) {
-            message = context.getString(R.string.error_message_illegal_qr);
-        } else if (exception instanceof IllegalRequestAmountException) {
-            message = context.getString(R.string.error_message_request_amount_is_incorrect);
-        } else if (exception instanceof SelfSendCanNotException) {
-            message = context.getString(R.string.error_message_cannot_send_to_myself);
+        final String fallback = context.getString(R.string.error_message_retry_again);
+        if (exception instanceof AccountAddressException) {
+            AccountAddressException addressException = (AccountAddressException) exception;
+            return context.getString(
+                    R.string.error_message_invalid_address,
+                    addressException.getCodeValue()
+            );
         } else if (exception instanceof RequiredArgumentException) {
-            message = context.getString(R.string.validation_message_required, (Object[]) params);
+            return context.getString(R.string.validation_message_required, (Object[]) params);
         } else if (exception instanceof WriterException) {
-            message = context.getString(R.string.error_message_cannot_generate_qr);
-        } else if (exception instanceof ReceiverNotFoundException) {
-            message = context.getString(R.string.error_receiver_not_found);
-        } else if (exception instanceof NetworkNotConnectedException) {
-            message = context.getString(R.string.error_message_check_network_state);
-        } else if (exception instanceof HttpBadRequestException) {
-            message = context.getString(R.string.error_message_retry_again);
-        } else {
-            message = context.getString(R.string.error_message_retry_again);
+            return context.getString(R.string.error_message_cannot_generate_qr);
+        } else if (exception instanceof ToriiException) {
+            return sanitizeMessage(exception, fallback);
+        } else if (exception instanceof IllegalArgumentException) {
+            return sanitizeMessage(exception, fallback);
         }
+        return fallback;
+    }
 
+    private static String sanitizeMessage(Throwable throwable, String fallback) {
+        String message = throwable.getMessage();
+        if (message == null || message.trim().isEmpty()) {
+            return fallback;
+        }
         return message;
     }
 }

@@ -18,27 +18,28 @@ limitations under the License.
 package io.soramitsu.examplepoint.view.fragment;
 
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
-import java.io.File;
+import com.google.android.material.textfield.TextInputLayout;
 
 import io.soramitsu.examplepoint.R;
+import io.soramitsu.examplepoint.data.AccountProfile;
 import io.soramitsu.examplepoint.databinding.FragmentAccountRegisterBinding;
 import io.soramitsu.examplepoint.presenter.AccountRegisterPresenter;
 import io.soramitsu.examplepoint.view.AccountRegisterView;
+import io.soramitsu.examplepoint.view.AccountRegisterView.RegistrationField;
 import io.soramitsu.examplepoint.view.dialog.ProgressDialog;
 import io.soramitsu.examplepoint.view.dialog.SuccessDialog;
-import io.soramitsu.irohaandroid.cache.FileManager;
-import io.soramitsu.irohaandroid.security.KeyStoreManager;
 
 public class AccountRegisterFragment extends Fragment implements AccountRegisterView {
     public static final String TAG = AccountRegisterFragment.class.getSimpleName();
+    private static final String ARG_KEY_ALIAS = "key_alias";
 
     private AccountRegisterPresenter accountRegisterPresenter = new AccountRegisterPresenter();
 
@@ -49,26 +50,25 @@ public class AccountRegisterFragment extends Fragment implements AccountRegister
     private AccountRegisterListener accountRegisterListener;
 
     public interface AccountRegisterListener {
-        void onAccountRegisterSuccessful(String uuid);
+        void onAccountRegisterSuccessful();
+    }
+
+    public static AccountRegisterFragment newInstance(@NonNull String keyAlias) {
+        AccountRegisterFragment fragment = new AccountRegisterFragment();
+        Bundle args = new Bundle();
+        args.putString(ARG_KEY_ALIAS, keyAlias);
+        fragment.setArguments(args);
+        return fragment;
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         accountRegisterPresenter.setView(this);
-        accountRegisterPresenter.onCreate();
-
-        FileManager fileManager = new FileManager();
-        File extStorage = getContext().getExternalFilesDir("keypair");
-        Log.d("Account soramitsu", "save: " + extStorage.toString());
-        File uuidFile = new File(extStorage, "private_key.txt");
-        KeyStoreManager keyStoreManager = new KeyStoreManager.Builder(getContext()).build();
-        try {
-            String result = keyStoreManager.decrypt(fileManager.readFileContent(uuidFile));
-            Log.d(TAG, "onCreate: result: " + result);
-        } catch (Exception e) {
+        if (getArguments() != null) {
+            accountRegisterPresenter.setPreparedKeyAlias(getArguments().getString(ARG_KEY_ALIAS));
         }
-
+        accountRegisterPresenter.onCreate();
     }
 
     @Override
@@ -83,7 +83,7 @@ public class AccountRegisterFragment extends Fragment implements AccountRegister
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         binding = FragmentAccountRegisterBinding.bind(view);
-        binding.userName.setOnKeyListener(accountRegisterPresenter.onKeyEventOnUserName());
+        binding.displayName.setOnKeyListener(accountRegisterPresenter.onKeyEventOnUserName());
         binding.registerButton.setOnClickListener(accountRegisterPresenter.onRegisterClicked());
     }
 
@@ -104,38 +104,111 @@ public class AccountRegisterFragment extends Fragment implements AccountRegister
 
     @Override
     public void showError(final String error) {
-        binding.userNameContainer.setError(error);
-        binding.userNameContainer.setErrorEnabled(true);
+        binding.displayNameContainer.setError(error);
+        binding.displayNameContainer.setErrorEnabled(true);
     }
 
     @Override
-    public void registerSuccessful(final String uuid) {
+    public void showFieldError(@NonNull RegistrationField field, @NonNull String error) {
+        switch (field) {
+            case DISPLAY_NAME:
+                setFieldError(binding.displayNameContainer, error);
+                break;
+            case LEGAL_NAME:
+                setFieldError(binding.legalNameContainer, error);
+                break;
+            case DOCUMENT_TYPE:
+                setFieldError(binding.documentTypeContainer, error);
+                break;
+            case DOCUMENT_NUMBER:
+                setFieldError(binding.documentNumberContainer, error);
+                break;
+            case RESIDENCY:
+                setFieldError(binding.residencyContainer, error);
+                break;
+            case CONTACT:
+                setFieldError(binding.contactContainer, error);
+                break;
+        }
+    }
+
+    @Override
+    public void clearFieldErrors() {
+        clearError(binding.displayNameContainer);
+        clearError(binding.legalNameContainer);
+        clearError(binding.documentTypeContainer);
+        clearError(binding.documentNumberContainer);
+        clearError(binding.residencyContainer);
+        clearError(binding.contactContainer);
+    }
+
+    @Override
+    public void registerSuccessful(final AccountProfile profile) {
         successDialog.show(
                 getActivity(),
                 getString(R.string.register),
-                getString(R.string.message_account_register_successful),
+                getString(
+                        R.string.message_account_register_successful_with_id,
+                        profile.getAccountId(),
+                        profile.getUaid() != null ? profile.getUaid() : getString(R.string.receive_uaid_unknown)
+                ),
                 new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
                         successDialog.hide();
-                        accountRegisterListener.onAccountRegisterSuccessful(uuid);
+                        accountRegisterListener.onAccountRegisterSuccessful();
                     }
                 });
     }
 
     @Override
-    public String getAlias() {
-        return binding.userName.getText().toString();
+    public String getDisplayName() {
+        return binding.displayName.getText() != null ? binding.displayName.getText().toString() : "";
+    }
+
+    @Override
+    public String getLegalName() {
+        return binding.legalName.getText() != null ? binding.legalName.getText().toString() : "";
+    }
+
+    @Override
+    public String getDocumentNumber() {
+        return binding.documentNumber.getText() != null ? binding.documentNumber.getText().toString() : "";
+    }
+
+    @Override
+    public String getDocumentType() {
+        return binding.documentType.getText() != null ? binding.documentType.getText().toString() : "";
+    }
+
+    @Override
+    public String getResidencyCountry() {
+        return binding.residency.getText() != null ? binding.residency.getText().toString() : "";
+    }
+
+    @Override
+    public String getContactInfo() {
+        return binding.contact.getText() != null ? binding.contact.getText().toString() : "";
     }
 
     @Override
     public void showProgress() {
-        binding.userNameContainer.setErrorEnabled(false);
+        clearFieldErrors();
         progressDialog.show(getActivity(), getString(R.string.during_registration));
     }
 
     @Override
     public void hideProgress() {
         progressDialog.hide();
+    }
+
+    private void setFieldError(TextInputLayout layout, String error) {
+        layout.setError(error);
+        layout.setErrorEnabled(true);
+    }
+
+    private void clearError(TextInputLayout layout) {
+        layout.setError(null);
+        layout.setErrorEnabled(false);
     }
 }

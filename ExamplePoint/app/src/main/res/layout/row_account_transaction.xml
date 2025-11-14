@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="12dp"
+    android:background="@drawable/bg_wallet_card"
+    android:orientation="horizontal"
+    android:padding="12dp">
+
+    <ImageView
+        android:id="@+id/transaction_icon"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_marginEnd="12dp"
+        android:contentDescription="@string/app_name"
+        android:src="@drawable/icon_wallet" />
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/transaction_status"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingLeft="8dp"
+            android:paddingRight="8dp"
+            android:paddingTop="2dp"
+            android:paddingBottom="2dp"
+            android:textStyle="bold"
+            android:textSize="12sp"
+            tools:text="Success" />
+
+        <TextView
+            android:id="@+id/transaction_hash"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:textColor="@color/primary_text"
+            android:textSize="14sp"
+            tools:text="Entrypoint: 0x1234abcd" />
+
+        <TextView
+            android:id="@+id/transaction_authority"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:textColor="@color/secondary_text"
+            android:textSize="12sp"
+            tools:text="authority@example" />
+
+        <TextView
+            android:id="@+id/transaction_timestamp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:textColor="@color/secondary_text"
+            android:textSize="12sp"
+            tools:text="2024/07/22 12:34" />
+
+        <TextView
+            android:id="@+id/transaction_error"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:textColor="@color/red600"
+            android:textSize="12sp"
+            android:visibility="gone"
+            tools:text="Error: insufficient balance"
+            tools:visibility="visible" />
+    </LinearLayout>
+</LinearLayout>

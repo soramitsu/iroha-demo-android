@@ -19,6 +19,7 @@ package io.soramitsu.examplepoint.presenter;
 
 import android.content.Context;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
@@ -26,6 +27,7 @@ import android.view.KeyEvent;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 
+import java.util.Locale;
 import java.util.concurrent.CompletableFuture;
 
 import io.soramitsu.examplepoint.R;
@@ -33,8 +35,10 @@ import io.soramitsu.examplepoint.data.AccountProfile;
 import io.soramitsu.examplepoint.exception.ErrorMessageFactory;
 import io.soramitsu.examplepoint.exception.RequiredArgumentException;
 import io.soramitsu.examplepoint.sdk.IrohaRepository;
+import io.soramitsu.examplepoint.sdk.registration.AccountRegistrationRequest;
 import io.soramitsu.examplepoint.util.CrashReporter;
 import io.soramitsu.examplepoint.view.AccountRegisterView;
+import io.soramitsu.examplepoint.view.AccountRegisterView.RegistrationField;
 
 public class AccountRegisterPresenter implements Presenter<AccountRegisterView> {
     public static final String TAG = AccountRegisterPresenter.class.getSimpleName();
@@ -42,6 +46,8 @@ public class AccountRegisterPresenter implements Presenter<AccountRegisterView> 
     private AccountRegisterView accountRegisterView;
     private IrohaRepository irohaRepository;
     private final Handler mainHandler = new Handler(Looper.getMainLooper());
+    @Nullable
+    private String preparedKeyAlias;
 
     @Override
     public void setView(@NonNull AccountRegisterView view) {
@@ -81,6 +87,10 @@ public class AccountRegisterPresenter implements Presenter<AccountRegisterView> 
         // nothing
     }
 
+    public void setPreparedKeyAlias(@Nullable String keyAlias) {
+        this.preparedKeyAlias = keyAlias;
+    }
+
     public View.OnKeyListener onKeyEventOnUserName() {
         return new View.OnKeyListener() {
             @Override
@@ -101,29 +111,97 @@ public class AccountRegisterPresenter implements Presenter<AccountRegisterView> 
             @Override
             public void onClick(View view) {
                 final Context context = accountRegisterView.getContext();
-                final String alias = accountRegisterView.getAlias();
-
-                if (alias.isEmpty()) {
-                    accountRegisterView.showError(
-                            ErrorMessageFactory.create(context, new RequiredArgumentException(), context.getString(R.string.name))
-                    );
+                accountRegisterView.clearFieldErrors();
+                final AccountRegistrationRequest request = buildRequest();
+                if (request == null) {
                     return;
                 }
-
                 accountRegisterView.showProgress();
-                register(alias);
+                register(request);
             }
         };
     }
 
-    private void register(final String alias) {
+    private AccountRegistrationRequest buildRequest() {
+        final Context context = accountRegisterView.getContext();
+        boolean invalid = false;
+
+        final String displayName = accountRegisterView.getDisplayName().trim();
+        if (displayName.isEmpty()) {
+            accountRegisterView.showFieldError(
+                    RegistrationField.DISPLAY_NAME,
+                    ErrorMessageFactory.create(context, new RequiredArgumentException(), context.getString(R.string.name)));
+            invalid = true;
+        }
+
+        final String legalName = accountRegisterView.getLegalName().trim();
+        if (legalName.isEmpty()) {
+            accountRegisterView.showFieldError(
+                    RegistrationField.LEGAL_NAME,
+                    context.getString(R.string.registration_legal_name_required));
+            invalid = true;
+        }
+
+        final String documentType = accountRegisterView.getDocumentType().trim().toUpperCase(Locale.US);
+        if (documentType.isEmpty()) {
+            accountRegisterView.showFieldError(
+                    RegistrationField.DOCUMENT_TYPE,
+                    context.getString(R.string.registration_document_type_required));
+            invalid = true;
+        }
+
+        final String documentNumber = accountRegisterView.getDocumentNumber().trim();
+        if (documentNumber.isEmpty()) {
+            accountRegisterView.showFieldError(
+                    RegistrationField.DOCUMENT_NUMBER,
+                    context.getString(R.string.registration_document_number_required));
+            invalid = true;
+        }
+
+        final String residency = accountRegisterView.getResidencyCountry().trim().toUpperCase(Locale.US);
+        if (residency.isEmpty()) {
+            accountRegisterView.showFieldError(
+                    RegistrationField.RESIDENCY,
+                    context.getString(R.string.registration_residency_required));
+            invalid = true;
+        }
+
+        final String contact = accountRegisterView.getContactInfo().trim();
+        if (contact.isEmpty()) {
+            accountRegisterView.showFieldError(
+                    RegistrationField.CONTACT,
+                    context.getString(R.string.registration_contact_required));
+            invalid = true;
+        }
+
+        if (invalid) {
+            return null;
+        }
+
+        if (preparedKeyAlias == null || preparedKeyAlias.trim().isEmpty()) {
+            accountRegisterView.showError(context.getString(R.string.error_message_retry_again));
+            return null;
+        }
+
+        return new AccountRegistrationRequest(
+                displayName,
+                legalName,
+                documentType,
+                documentNumber,
+                residency,
+                contact,
+                preparedKeyAlias
+        );
+    }
+
+    private void register(final AccountRegistrationRequest request) {
         if (irohaRepository == null) {
             accountRegisterView.hideProgress();
             accountRegisterView.showError(accountRegisterView.getContext().getString(R.string.error_message_retry_again));
             return;
         }
 
-        CompletableFuture<AccountProfile> future = irohaRepository.registerAccount(alias);
+        CompletableFuture<AccountProfile> future = irohaRepository.registerAccount(request);
         future.thenAccept(profile -> mainHandler.post(() -> registerSuccessful(profile)))
                 .exceptionally(throwable -> {
                     mainHandler.post(() -> registerFailure(throwable.getCause() != null ? throwable.getCause() : throwable));
@@ -133,7 +211,7 @@ public class AccountRegisterPresenter implements Presenter<AccountRegisterView> 
 
     private void registerSuccessful(AccountProfile profile) {
         accountRegisterView.hideProgress();
-        accountRegisterView.registerSuccessful(profile.getAccountAddress());
+        accountRegisterView.registerSuccessful(profile);
     }
 
     private void registerFailure(Throwable throwable) {

@@ -19,7 +19,13 @@ package io.soramitsu.examplepoint.view;
 
 import android.app.Activity;
 
-import io.soramitsu.examplepoint.model.TransactionHistory;
+import java.util.List;
+
+import io.soramitsu.examplepoint.data.AccountProfile;
+import io.soramitsu.examplepoint.sdk.model.AccountTransaction;
+import io.soramitsu.examplepoint.sdk.model.UaidBindings;
+import io.soramitsu.examplepoint.sdk.model.UaidManifestInventory;
+import io.soramitsu.examplepoint.sdk.model.UaidPortfolio;
 
 public interface WalletView extends LoadingView {
     Activity getActivity();
@@ -28,11 +34,17 @@ public interface WalletView extends LoadingView {
 
     void setRefreshing(boolean refreshing);
 
-    void setRefreshEnable(boolean enable);
+    void setRefreshEnabled(boolean enable);
 
-    void showError(String error, Throwable throwable);
+    void renderWallet(AccountProfile profile,
+                      UaidPortfolio portfolio,
+                      UaidBindings bindings,
+                      UaidManifestInventory manifests,
+                      List<AccountTransaction> transactions,
+                      boolean usingCachedData,
+                      long syncedAtMs);
 
-    TransactionHistory getTransaction();
+    void showError(String message);
 
-    void renderTransactionHistory(TransactionHistory transactionHistory);
+    void promptReRegistration();
 }

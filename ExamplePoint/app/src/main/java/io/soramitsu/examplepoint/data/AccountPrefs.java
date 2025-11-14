@@ -7,6 +7,8 @@ import androidx.annotation.Nullable;
 
 import java.util.Optional;
 
+import io.soramitsu.examplepoint.sdk.identity.NexusIdentityManifest;
+
 /**
  * Simple SharedPreferences-backed store for the active account profile.
  */
@@ -18,6 +20,8 @@ public final class AccountPrefs {
     private static final String KEY_DISPLAY_NAME = "display_name";
     private static final String KEY_KEY_ALIAS = "key_alias";
     private static final String KEY_ASSET_ID = "preferred_asset";
+    private static final String KEY_UAID = "uaid";
+    private static final String KEY_IDENTITY_MANIFEST = "identity_manifest";
 
     private final SharedPreferences prefs;
 
@@ -34,7 +38,17 @@ public final class AccountPrefs {
             return Optional.empty();
         }
         final String assetId = prefs.getString(KEY_ASSET_ID, null);
-        return Optional.of(new AccountProfile(address, domain, displayName, keyAlias, assetId));
+        final String uaid = prefs.getString(KEY_UAID, null);
+        final String manifestJson = prefs.getString(KEY_IDENTITY_MANIFEST, null);
+        final NexusIdentityManifest manifest = NexusIdentityManifest.fromStorageJson(manifestJson);
+        return Optional.of(new AccountProfile(
+                address,
+                domain,
+                displayName,
+                keyAlias,
+                assetId,
+                uaid,
+                manifest));
     }
 
     public void save(AccountProfile profile) {
@@ -44,6 +58,11 @@ public final class AccountPrefs {
                 .putString(KEY_DISPLAY_NAME, profile.getDisplayName())
                 .putString(KEY_KEY_ALIAS, profile.getKeyAlias())
                 .putString(KEY_ASSET_ID, profile.getPreferredAssetId())
+                .putString(KEY_UAID, profile.getUaid())
+                .putString(KEY_IDENTITY_MANIFEST,
+                        profile.getIdentityManifest() != null
+                                ? profile.getIdentityManifest().toStorageJson()
+                                : null)
                 .apply();
     }
 

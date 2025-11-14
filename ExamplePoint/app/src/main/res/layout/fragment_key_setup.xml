@@ -1,0 +1,153 @@
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:padding="16dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingBottom="32dp">
+
+            <TextView
+                android:id="@+id/key_setup_title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/key_setup_title"
+                android:textAppearance="?attr/textAppearanceHeadline6"
+                android:textColor="@color/white" />
+
+            <TextView
+                android:id="@+id/key_setup_description"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="@string/key_setup_description"
+                android:textColor="@color/white" />
+
+            <com.google.android.material.button.MaterialButtonToggleGroup
+                android:id="@+id/word_count_toggle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                app:singleSelection="true">
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/word_count_option_12"
+                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/key_setup_words_12"
+                    android:checked="true" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/word_count_option_24"
+                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/key_setup_words_24" />
+            </com.google.android.material.button.MaterialButtonToggleGroup>
+
+            <com.google.android.material.materialswitch.MaterialSwitch
+                android:id="@+id/google_backup_switch"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:text="@string/key_setup_google_backup" />
+
+            <com.google.android.material.materialswitch.MaterialSwitch
+                android:id="@+id/icloud_backup_switch"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/key_setup_icloud_backup" />
+
+            <Button
+                android:id="@+id/key_setup_generate"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:background="@drawable/button_frame"
+                android:text="@string/key_setup_generate"
+                android:textColor="@color/white" />
+
+            <Button
+                android:id="@+id/key_setup_connect"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:background="@drawable/button_frame"
+                android:text="@string/key_setup_connect"
+                android:textColor="@color/white" />
+
+            <LinearLayout
+                android:id="@+id/backup_plan_container"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:background="@drawable/bg_wallet_card"
+                android:orientation="vertical"
+                android:padding="16dp"
+                android:visibility="gone">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/key_setup_plan_header"
+                    android:textAppearance="?attr/textAppearanceSubtitle1"
+                    android:textColor="@color/white" />
+
+                <TextView
+                    android:id="@+id/mnemonic_words"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:fontFamily="monospace"
+                    android:textColor="@color/white" />
+
+                <TextView
+                    android:id="@+id/key_setup_plan_notice"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="@string/key_setup_plan_notice"
+                    android:textColor="@color/white" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:orientation="horizontal">
+
+                    <Button
+                        android:id="@+id/key_setup_copy"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="@string/key_setup_copy" />
+
+                    <Button
+                        android:id="@+id/key_setup_continue"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="8dp"
+                        android:layout_weight="1"
+                        android:text="@string/key_setup_continue" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <ProgressBar
+                android:id="@+id/progress_bar"
+                style="?android:attr/progressBarStyleLarge"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="16dp"
+                android:visibility="gone" />
+        </LinearLayout>
+    </ScrollView>
+</layout>

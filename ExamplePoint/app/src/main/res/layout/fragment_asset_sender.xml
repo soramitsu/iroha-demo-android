@@ -34,7 +34,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="16dp"
                     android:layout_toStartOf="@id/qr_button"
-                    android:hint="@string/to"
+                    android:hint="@string/send_receiver_hint"
                     android:textColorHint="@color/colorPrimary">
 
                     <EditText
@@ -42,8 +42,9 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:ellipsize="end"
-                        android:focusable="false"
-                        android:inputType="none"
+                        android:focusable="true"
+                        android:focusableInTouchMode="true"
+                        android:inputType="textNoSuggestions|textVisiblePassword"
                         android:maxLines="1" />
                 </com.google.android.material.textfield.TextInputLayout>
 

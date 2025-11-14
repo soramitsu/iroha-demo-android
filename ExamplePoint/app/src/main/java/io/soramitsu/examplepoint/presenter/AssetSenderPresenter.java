@@ -1,65 +1,36 @@
-/*
-Copyright Soramitsu Co., Ltd. 2016 All Rights Reserved.
-http://soramitsu.co.jp
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-         http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
-
 package io.soramitsu.examplepoint.presenter;
 
 import android.content.Context;
-import androidx.annotation.NonNull;
+import android.os.Handler;
+import android.os.Looper;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.util.Log;
 import android.view.View;
 
-import com.google.gson.Gson;
+import androidx.annotation.NonNull;
 
-import org.jetbrains.annotations.NotNull;
-
-import java.io.IOException;
-import java.security.InvalidKeyException;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.UnrecoverableKeyException;
-
-import javax.crypto.NoSuchPaddingException;
+import java.util.concurrent.CompletableFuture;
 
 import io.soramitsu.examplepoint.R;
+import io.soramitsu.examplepoint.data.ToriiConfig;
 import io.soramitsu.examplepoint.exception.ErrorMessageFactory;
-import io.soramitsu.examplepoint.exception.IllegalQRCodeException;
-import io.soramitsu.examplepoint.exception.NetworkNotConnectedException;
-import io.soramitsu.examplepoint.exception.ReceiverNotFoundException;
-import io.soramitsu.examplepoint.exception.SelfSendCanNotException;
-import io.soramitsu.examplepoint.model.QRType;
-import io.soramitsu.examplepoint.model.TransferQRParameter;
-import io.soramitsu.examplepoint.util.CrashReporter;
-import io.soramitsu.examplepoint.util.NetworkUtil;
+import io.soramitsu.examplepoint.sdk.AccountAddressFormatter;
+import io.soramitsu.examplepoint.sdk.IrohaRepository;
 import io.soramitsu.examplepoint.view.AssetSenderView;
-import io.soramitsu.irohaandroid.Iroha;
-import io.soramitsu.irohaandroid.callback.Callback;
-import io.soramitsu.irohaandroid.model.KeyPair;
-import io.soramitsu.irohaandroid.security.MessageDigest;
+import org.hyperledger.iroha.android.address.AccountAddress.AccountAddressException;
 
 public class AssetSenderPresenter implements Presenter<AssetSenderView> {
-    public static final String TAG = AssetSenderPresenter.class.getSimpleName();
 
-    public static final String IROHA_TASK_TAG_SEND = "AssetSend";
+    private final IrohaRepository repository;
+    private final ToriiConfig toriiConfig;
+    private final Handler mainHandler = new Handler(Looper.getMainLooper());
 
     private AssetSenderView assetSenderView;
 
-    private KeyPair keyPair;
+    public AssetSenderPresenter(@NonNull Context context) {
+        this.repository = new IrohaRepository(context.getApplicationContext());
+        this.toriiConfig = ToriiConfig.fromBuildConfig();
+    }
 
     @Override
     public void setView(@NonNull AssetSenderView view) {
@@ -68,86 +39,36 @@ public class AssetSenderPresenter implements Presenter<AssetSenderView> {
 
     @Override
     public void onCreate() {
-        // nothing
+        // no-op
     }
 
     @Override
     public void onStart() {
-        keyPair = getKeyPair();
+        // no-op
     }
 
     @Override
     public void onResume() {
-        // nothing
+        // no-op
     }
 
     @Override
     public void onPause() {
-        // nothing
+        // no-op
     }
 
     @Override
     public void onStop() {
-        Iroha.getInstance().cancelAsyncTask(IROHA_TASK_TAG_SEND);
+        // no-op
     }
 
     @Override
     public void onDestroy() {
-        // nothing
+        // no-op
     }
 
     public View.OnClickListener onSubmitClicked() {
-        return new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                try {
-                    send();
-                } catch (ReceiverNotFoundException e) {
-                    assetSenderView.showError(ErrorMessageFactory.create(assetSenderView.getContext(), e));
-                }
-            }
-        };
-    }
-
-    public View.OnClickListener onQRShowClicked() {
-        return new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                assetSenderView.showQRReader();
-            }
-        };
-    }
-
-    public Callback<String> onReadQR() {
-        return new Callback<String>() {
-            @Override
-            public void onSuccessful(String result) {
-                Log.d(TAG, "onSuccessful: " + result);
-
-                final Context context = assetSenderView.getContext();
-
-                TransferQRParameter params;
-                try {
-                    params = new Gson().fromJson(result, TransferQRParameter.class);
-                } catch (Exception e) {
-                    Log.e(TAG, "setOnResult: json could not parse to object!");
-                    CrashReporter.logError(AssetSenderPresenter.TAG, "Failed to parse QR payload", e);
-                    assetSenderView.showError(ErrorMessageFactory.create(context, new IllegalQRCodeException()));
-                    return;
-                }
-
-                final String value = String.valueOf(params.amount).equals("0")
-                        ? ""
-                        : String.valueOf(params.amount);
-                assetSenderView.afterQRReadViewState(params.account, value);
-            }
-
-            @Override
-            public void onFailure(Throwable throwable) {
-                Log.e(TAG, "onFailure: ", throwable);
-                CrashReporter.logError(AssetSenderPresenter.TAG, throwable);
-            }
-        };
+        return v -> send();
     }
 
     public TextWatcher textWatcher() {
@@ -155,135 +76,109 @@ public class AssetSenderPresenter implements Presenter<AssetSenderView> {
             private boolean isAmountEmpty;
 
             @Override
-            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
                 String amount = assetSenderView.getAmount();
                 isAmountEmpty = amount == null || amount.isEmpty();
             }
 
             @Override
-            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                if (isAmountEmpty && charSequence.toString().equals("0")) {
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                if (isAmountEmpty && "0".contentEquals(s)) {
                     assetSenderView.setAmount("");
-                    return;
                 }
             }
 
             @Override
-            public void afterTextChanged(Editable editable) {
-                // nothing
+            public void afterTextChanged(Editable s) {
+                // no-op
             }
         };
     }
 
-    private void send() throws ReceiverNotFoundException {
-        final String receiver = assetSenderView.getReceiver();
-        final String amount = assetSenderView.getAmount();
+    private void send() {
+        final String normalizedReceiver;
+        final String amount = assetSenderView.getAmount().trim();
 
-        if (receiver.isEmpty() || amount.isEmpty()) {
-            throw new ReceiverNotFoundException();
+        if (amount.isEmpty()) {
+            assetSenderView.showError(ErrorMessageFactory.create(
+                    assetSenderView.getContext(),
+                    new IllegalArgumentException("Receiver and amount are required")));
+            return;
+        }
+
+        try {
+            normalizedReceiver = normalizeReceiver(assetSenderView.getReceiver());
+        } catch (IllegalArgumentException | AccountAddressException e) {
+            assetSenderView.showError(ErrorMessageFactory.create(assetSenderView.getContext(), e));
+            return;
+        }
+
+        if (!repository.hasAccountProfile()) {
+            assetSenderView.showError(ErrorMessageFactory.create(
+                    assetSenderView.getContext(),
+                    new IllegalStateException("Account is not registered")));
+            return;
+        }
+
+        if (normalizedReceiver.equalsIgnoreCase(repository.getAccountProfile().getAccountId())) {
+            assetSenderView.showError(
+                    ErrorMessageFactory.create(assetSenderView.getContext(), new IllegalArgumentException(
+                            assetSenderView.getContext().getString(R.string.error_message_cannot_send_to_myself))));
+            return;
         }
 
         assetSenderView.showProgress();
+        CompletableFuture<Void> future = repository.transferAsset(normalizedReceiver, amount);
+        future.thenRun(() -> mainHandler.post(() -> onTransferSuccess(normalizedReceiver, amount)))
+                .exceptionally(throwable -> {
+                    Throwable cause = throwable.getCause() != null ? throwable.getCause() : throwable;
+                    mainHandler.post(() -> handleError(cause));
+                    return null;
+                });
+    }
 
-        if (validation()) {
-            final String assetUuid = "60f4a396b520d6c54e33634d060751814e0c4bf103a81c58da704bba82461c32";
-            final String command = QRType.TRANSFER.getType();
-            final String sender = keyPair.publicKey;
-            final long timestamp = System.currentTimeMillis() / 1000;
-            final String message = generateMessage(timestamp, amount, sender, receiver, command, assetUuid);
-            final String signature = MessageDigest.digest(message, MessageDigest.Algorithm.SHA3_256);
-
-            Iroha iroha = Iroha.getInstance();
-            iroha.runAsyncTask(
-                    IROHA_TASK_TAG_SEND,
-                    iroha.operateAssetFunction(
-                            assetUuid,
-                            command,
-                            amount,
-                            sender,
-                            receiver,
-                            signature,
-                            timestamp
-                    ),
-                    callback()
-            );
-        } else {
-            assetSenderView.hideProgress();
+    public void onQrScanned(String payload) {
+        if (payload == null) {
+            assetSenderView.showError(ErrorMessageFactory.create(
+                    assetSenderView.getContext(),
+                    new IllegalArgumentException(assetSenderView.getContext().getString(R.string.error_invalid_qr_payload))));
+            return;
+        }
+        try {
+            String normalized = normalizeReceiver(payload);
+            assetSenderView.setReceiver(normalized);
+        } catch (IllegalArgumentException | AccountAddressException e) {
+            assetSenderView.showError(ErrorMessageFactory.create(assetSenderView.getContext(), e));
         }
     }
 
-    private Callback<Boolean> callback() {
-        final Context c = assetSenderView.getContext();
-        return new Callback<Boolean>() {
-            @Override
-            public void onSuccessful(Boolean result) {
-                assetSenderView.hideProgress();
-
-                assetSenderView.showSuccess(
-                        c.getString(R.string.successful_title_sent),
-                        c.getString(R.string.message_send_asset_successful,
-                                assetSenderView.getReceiver(), assetSenderView.getAmount()),
-                        new View.OnClickListener() {
-                            @Override
-                            public void onClick(View view) {
-                                assetSenderView.hideSuccess();
-                                assetSenderView.beforeQRReadViewState();
-                            }
-                        });
-            }
-
-            @Override
-            public void onFailure(Throwable throwable) {
-                assetSenderView.hideProgress();
-
-                if (NetworkUtil.isOnline(c)) {
-                    CrashReporter.logError(AssetSenderPresenter.TAG, throwable);
-                    assetSenderView.showError(ErrorMessageFactory.create(c, throwable));
-                } else {
-                    assetSenderView.showError(ErrorMessageFactory.create(c, new NetworkNotConnectedException()));
-                }
-            }
-        };
-    }
-
-    private String generateMessage(long timestamp, String value, String sender,
-                                   String receiver, String command, String uuid) {
-        return "timestamp:" + timestamp
-                + ",value:" + value
-                + ",sender:" + sender
-                + ",receiver:" + receiver
-                + ",command:" + command
-                + ",asset-uuid:" + uuid;
-    }
-
-    @NotNull
-    private KeyPair getKeyPair() {
-        if (keyPair == null) {
-            final Context context = assetSenderView.getContext();
-            try {
-                keyPair = KeyPair.getKeyPair(context);
-            } catch (NoSuchPaddingException | UnrecoverableKeyException | NoSuchAlgorithmException
-                    | KeyStoreException | InvalidKeyException | IOException e) {
-                Log.e(TAG, "getKeyPair: ", e);
-                CrashReporter.logError(AssetSenderPresenter.TAG, e);
-                assetSenderView.showError(ErrorMessageFactory.create(context, e));
-                return new KeyPair("", "");
-            }
+    private String normalizeReceiver(String raw) throws AccountAddressException {
+        if (raw == null || raw.trim().isEmpty()) {
+            throw new IllegalArgumentException(assetSenderView.getContext()
+                    .getString(R.string.error_message_receiver_required));
         }
-        return keyPair;
+        return AccountAddressFormatter.normalizeAccountId(raw, toriiConfig);
     }
 
-    private boolean validation() {
-        if (assetSenderView.getReceiver().equals(keyPair.publicKey)) {
-            Log.e(TAG, "setOnResult: This QR is mine!");
-            assetSenderView.showError(
-                    ErrorMessageFactory.create(
-                            assetSenderView.getContext(),
-                            new SelfSendCanNotException()
-                    )
-            );
-            return false;
-        }
-        return true;
+    private void onTransferSuccess(String receiver, String amount) {
+        assetSenderView.hideProgress();
+        assetSenderView.showSuccess(
+                assetSenderView.getContext().getString(R.string.successful_title_sent),
+                assetSenderView.getContext().getString(
+                        R.string.message_send_asset_successful,
+                        receiver,
+                        amount),
+                new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        assetSenderView.hideSuccess();
+                        assetSenderView.resetForm();
+                    }
+                });
+    }
+
+    private void handleError(Throwable throwable) {
+        assetSenderView.hideProgress();
+        assetSenderView.showError(ErrorMessageFactory.create(assetSenderView.getContext(), throwable));
     }
 }

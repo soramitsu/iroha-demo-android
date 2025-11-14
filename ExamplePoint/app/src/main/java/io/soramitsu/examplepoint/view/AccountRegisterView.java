@@ -17,10 +17,38 @@ limitations under the License.
 
 package io.soramitsu.examplepoint.view;
 
+import androidx.annotation.NonNull;
+
+import io.soramitsu.examplepoint.data.AccountProfile;
+
 public interface AccountRegisterView extends LoadingView {
+
     void showError(String error);
 
-    void registerSuccessful(String uuid);
+    void showFieldError(@NonNull RegistrationField field, @NonNull String error);
 
-    String getAlias();
+    void clearFieldErrors();
+
+    void registerSuccessful(AccountProfile profile);
+
+    String getDisplayName();
+
+    String getLegalName();
+
+    String getDocumentNumber();
+
+    String getDocumentType();
+
+    String getResidencyCountry();
+
+    String getContactInfo();
+
+    enum RegistrationField {
+        DISPLAY_NAME,
+        LEGAL_NAME,
+        DOCUMENT_TYPE,
+        DOCUMENT_NUMBER,
+        RESIDENCY,
+        CONTACT
+    }
 }

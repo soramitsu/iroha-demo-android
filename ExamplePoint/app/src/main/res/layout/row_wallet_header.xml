@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="16dp"
+    app:cardBackgroundColor="@color/colorPrimary"
+    app:cardCornerRadius="12dp"
+    app:cardElevation="0dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <TextView
+            android:id="@+id/wallet_account_name"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textAppearance="@style/TextAppearance.AppCompat.Title"
+            android:textColor="@color/white"
+            android:textStyle="bold"
+            android:text="@string/app_name" />
+
+        <TextView
+            android:id="@+id/wallet_account_id"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:textColor="@color/white"
+            android:textSize="14sp"
+            tools:text="Account: snx1...@wonderland" />
+
+        <TextView
+            android:id="@+id/wallet_account_uaid"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:textColor="@color/white"
+            android:textSize="12sp"
+            tools:text="UAID: uaid:abcd..." />
+
+        <TextView
+            android:id="@+id/wallet_account_ias"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:textColor="@color/white"
+            android:textSize="12sp"
+            tools:text='{"version":1,"legal_name":"Alice"}' />
+
+        <TextView
+            android:id="@+id/wallet_account_balance"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:textColor="@color/white"
+            android:textSize="28sp"
+            android:textStyle="bold"
+            android:text="0" />
+
+        <TextView
+            android:id="@+id/wallet_last_synced"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:textColor="@color/white"
+            android:textSize="12sp"
+            android:textStyle="italic"
+            tools:text="Synced: 2026-03-30 12:34" />
+    </LinearLayout>
+</com.google.android.material.card.MaterialCardView>
