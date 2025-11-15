@@ -12,10 +12,8 @@ import java.util.concurrent.CompletableFuture;
 import io.soramitsu.examplepoint.data.AccountProfile;
 import io.soramitsu.examplepoint.exception.ErrorMessageFactory;
 import io.soramitsu.examplepoint.sdk.IrohaRepository;
+import io.soramitsu.examplepoint.sdk.model.AccountAsset;
 import io.soramitsu.examplepoint.sdk.model.AccountTransaction;
-import io.soramitsu.examplepoint.sdk.model.UaidBindings;
-import io.soramitsu.examplepoint.sdk.model.UaidManifestInventory;
-import io.soramitsu.examplepoint.sdk.model.UaidPortfolio;
 import io.soramitsu.examplepoint.view.WalletView;
 
 public class WalletPresenter implements Presenter<WalletView> {
@@ -79,31 +77,16 @@ public class WalletPresenter implements Presenter<WalletView> {
 
         walletView.showProgress();
         final AccountProfile profile = repository.getAccountProfile();
-        CompletableFuture<IrohaRepository.RepositoryResult<UaidPortfolio>> portfolioFuture = repository.fetchUaidPortfolio();
-        CompletableFuture<IrohaRepository.RepositoryResult<UaidBindings>> bindingsFuture = repository.fetchUaidBindings();
-        CompletableFuture<IrohaRepository.RepositoryResult<UaidManifestInventory>> manifestsFuture = repository.fetchUaidManifests();
+        CompletableFuture<List<AccountAsset>> assetsFuture = repository.fetchAccountAssets();
         CompletableFuture<List<AccountTransaction>> transactionsFuture =
                 repository.fetchAccountTransactions(DEFAULT_HISTORY_LIMIT);
-        CompletableFuture<Void> combined = CompletableFuture.allOf(portfolioFuture, bindingsFuture, manifestsFuture, transactionsFuture);
+        CompletableFuture<Void> combined = CompletableFuture.allOf(assetsFuture, transactionsFuture);
         combined.thenRun(() -> mainHandler.post(() -> {
-            IrohaRepository.RepositoryResult<UaidPortfolio> portfolioResult = portfolioFuture.join();
-            IrohaRepository.RepositoryResult<UaidBindings> bindingsResult = bindingsFuture.join();
-            IrohaRepository.RepositoryResult<UaidManifestInventory> manifestsResult = manifestsFuture.join();
-            boolean usingCache = portfolioResult.isFromCache()
-                    || bindingsResult.isFromCache()
-                    || manifestsResult.isFromCache();
-            long timestampMs = minTimestamp(
-                    portfolioResult.getTimestampMs(),
-                    bindingsResult.getTimestampMs(),
-                    manifestsResult.getTimestampMs());
             renderWallet(
                     profile,
-                    portfolioResult.getData(),
-                    bindingsResult.getData(),
-                    manifestsResult.getData(),
+                    assetsFuture.join(),
                     transactionsFuture.join(),
-                    usingCache,
-                    timestampMs);
+                    System.currentTimeMillis());
         }))
                 .exceptionally(throwable -> {
                     Throwable cause = throwable.getCause() != null ? throwable.getCause() : throwable;
@@ -113,25 +96,12 @@ public class WalletPresenter implements Presenter<WalletView> {
     }
 
     private void renderWallet(AccountProfile profile,
-                              UaidPortfolio portfolio,
-                              UaidBindings bindings,
-                              UaidManifestInventory manifests,
+                              List<AccountAsset> assets,
                               List<AccountTransaction> transactions,
-                              boolean usingCache,
                               long timestampMs) {
         walletView.hideProgress();
         walletView.setRefreshing(false);
-        walletView.renderWallet(profile, portfolio, bindings, manifests, transactions, usingCache, timestampMs);
-    }
-
-    private long minTimestamp(long... timestamps) {
-        long min = Long.MAX_VALUE;
-        for (long ts : timestamps) {
-            if (ts > 0 && ts < min) {
-                min = ts;
-            }
-        }
-        return min == Long.MAX_VALUE ? System.currentTimeMillis() : min;
+        walletView.renderWallet(profile, assets, transactions, timestampMs);
     }
 
     private void handleError(Throwable throwable) {

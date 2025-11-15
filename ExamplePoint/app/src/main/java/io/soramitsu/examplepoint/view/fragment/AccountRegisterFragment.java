@@ -148,9 +148,8 @@ public class AccountRegisterFragment extends Fragment implements AccountRegister
                 getActivity(),
                 getString(R.string.register),
                 getString(
-                        R.string.message_account_register_successful_with_id,
-                        profile.getAccountId(),
-                        profile.getUaid() != null ? profile.getUaid() : getString(R.string.receive_uaid_unknown)
+                        R.string.message_account_register_successful,
+                        profile.getAccountId()
                 ),
                 new View.OnClickListener() {
                     @Override

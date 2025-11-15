@@ -1,6 +1,5 @@
 package io.soramitsu.examplepoint.view.fragment;
 
-import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -20,18 +19,14 @@ import io.soramitsu.examplepoint.data.AccountProfile;
 import io.soramitsu.examplepoint.databinding.FragmentWalletBinding;
 import io.soramitsu.examplepoint.navigator.Navigator;
 import io.soramitsu.examplepoint.presenter.WalletPresenter;
+import io.soramitsu.examplepoint.sdk.model.AccountAsset;
 import io.soramitsu.examplepoint.sdk.model.AccountTransaction;
-import io.soramitsu.examplepoint.sdk.model.UaidBindings;
-import io.soramitsu.examplepoint.sdk.model.UaidManifestInventory;
-import io.soramitsu.examplepoint.sdk.model.UaidPortfolio;
 import io.soramitsu.examplepoint.view.WalletView;
 import io.soramitsu.examplepoint.view.activity.MainActivity;
 import io.soramitsu.examplepoint.view.adapter.WalletAdapter;
-import io.soramitsu.examplepoint.view.dialog.UaidDetailBottomSheet;
 
 public class WalletFragment extends Fragment implements WalletView,
-        MainActivity.MainActivityListener,
-        WalletAdapter.WalletRowListener {
+        MainActivity.MainActivityListener {
 
     public static final String TAG = WalletFragment.class.getSimpleName();
 
@@ -60,7 +55,7 @@ public class WalletFragment extends Fragment implements WalletView,
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        walletAdapter = new WalletAdapter(requireContext(), this);
+        walletAdapter = new WalletAdapter(requireContext());
         binding.walletList.setLayoutManager(new LinearLayoutManager(requireContext()));
         binding.walletList.setAdapter(walletAdapter);
         binding.swipeRefresh.setColorSchemeResources(
@@ -89,22 +84,11 @@ public class WalletFragment extends Fragment implements WalletView,
     }
 
     @Override
-    public void setRefreshEnabled(boolean enable) {
-        binding.swipeRefresh.setEnabled(enable);
-    }
-
-    @Override
     public void renderWallet(AccountProfile profile,
-                              UaidPortfolio portfolio,
-                              UaidBindings bindings,
-                              UaidManifestInventory manifests,
+                              List<AccountAsset> assets,
                               List<AccountTransaction> transactions,
-                              boolean usingCachedData,
                               long syncedAtMs) {
-        walletAdapter.submit(profile, portfolio, bindings, manifests, transactions, usingCachedData, syncedAtMs);
-        if (usingCachedData) {
-            Toast.makeText(requireContext(), R.string.wallet_cached_notice, Toast.LENGTH_SHORT).show();
-        }
+        walletAdapter.submit(profile, assets, transactions, syncedAtMs);
     }
 
     @Override
@@ -144,59 +128,4 @@ public class WalletFragment extends Fragment implements WalletView,
         // no-op
     }
 
-    @Override
-    public void onBindingSelected(UaidBindings.DataspaceBinding binding) {
-        String alias = binding.getDataspaceAlias();
-        if (alias == null || alias.trim().isEmpty()) {
-            alias = getString(R.string.wallet_dataspace_unknown_alias);
-        }
-        UaidDetailBottomSheet sheet = UaidDetailBottomSheet.forBinding(binding, alias);
-        sheet.show(getChildFragmentManager(), "uaid-binding");
-    }
-
-    @Override
-    public void onManifestSelected(UaidManifestInventory.ManifestRecord record) {
-        String alias = record.getDataspaceAlias();
-        if (alias == null || alias.trim().isEmpty()) {
-            alias = getString(R.string.wallet_dataspace_unknown_alias);
-        }
-        String lifecycle = buildLifecycleSummary(record.getLifecycle());
-        UaidDetailBottomSheet sheet = UaidDetailBottomSheet.forManifest(record, alias, lifecycle);
-        sheet.show(getChildFragmentManager(), "uaid-manifest");
-    }
-
-    private String buildLifecycleSummary(@Nullable UaidManifestInventory.Lifecycle lifecycle) {
-        if (lifecycle == null) {
-            return getString(R.string.wallet_manifest_lifecycle_unknown);
-        }
-        StringBuilder builder = new StringBuilder();
-        if (lifecycle.getActivatedEpoch() != null) {
-            builder.append(getString(R.string.wallet_manifest_lifecycle_activated, lifecycle.getActivatedEpoch()));
-        }
-        if (lifecycle.getExpiredEpoch() != null) {
-            if (builder.length() > 0) builder.append('\n');
-            builder.append(getString(R.string.wallet_manifest_lifecycle_expired, lifecycle.getExpiredEpoch()));
-        }
-        UaidManifestInventory.Revocation revocation = lifecycle.getRevocation();
-        if (revocation != null) {
-            if (builder.length() > 0) builder.append('\n');
-            builder.append(getString(R.string.wallet_manifest_lifecycle_revoked,
-                    revocation.getRevokedEpoch() != null ? revocation.getRevokedEpoch() : 0L,
-                    revocation.getReason() != null ? revocation.getReason() : getString(R.string.wallet_manifest_revocation_unknown_reason)));
-        }
-        return builder.length() == 0 ? getString(R.string.wallet_manifest_lifecycle_unknown) : builder.toString();
-    }
-
-    private void copyToClipboard(String label, String value) {
-        if (value == null || value.trim().isEmpty()) {
-            return;
-        }
-        android.content.ClipboardManager manager =
-                (android.content.ClipboardManager) requireContext().getSystemService(Context.CLIPBOARD_SERVICE);
-        if (manager == null) {
-            return;
-        }
-        manager.setPrimaryClip(android.content.ClipData.newPlainText(label, value));
-        Toast.makeText(requireContext(), R.string.wallet_copied_to_clipboard, Toast.LENGTH_SHORT).show();
-    }
 }

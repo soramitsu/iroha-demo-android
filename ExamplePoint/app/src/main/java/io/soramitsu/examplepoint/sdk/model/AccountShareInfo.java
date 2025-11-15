@@ -19,8 +19,6 @@ public final class AccountShareInfo {
     @Nullable
     private final String preferredAssetId;
     @Nullable
-    private final String uaid;
-    @Nullable
     private final String identityStatement;
 
     public AccountShareInfo(
@@ -33,7 +31,6 @@ public final class AccountShareInfo {
             int networkPrefix,
             @NonNull String domain,
             @Nullable String preferredAssetId,
-            @Nullable String uaid,
             @Nullable String identityStatement
     ) {
         this.displayName = displayName;
@@ -45,7 +42,6 @@ public final class AccountShareInfo {
         this.networkPrefix = networkPrefix;
         this.domain = domain;
         this.preferredAssetId = preferredAssetId;
-        this.uaid = uaid;
         this.identityStatement = identityStatement;
     }
 
@@ -91,11 +87,6 @@ public final class AccountShareInfo {
     @Nullable
     public String getPreferredAssetId() {
         return preferredAssetId;
-    }
-
-    @Nullable
-    public String getUaid() {
-        return uaid;
     }
 
     @Nullable

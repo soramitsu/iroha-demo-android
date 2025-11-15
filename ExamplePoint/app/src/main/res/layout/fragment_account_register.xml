@@ -5,13 +5,16 @@
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@color/colorPrimaryDark"
-        android:padding="16dp">
+        android:background="@android:color/transparent"
+        android:padding="24dp"
+        android:clipToPadding="false">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:background="@drawable/bg_wallet_card"
             android:orientation="vertical"
+            android:padding="24dp"
             android:paddingBottom="32dp">
 
             <ImageView

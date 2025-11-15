@@ -22,10 +22,8 @@ import android.app.Activity;
 import java.util.List;
 
 import io.soramitsu.examplepoint.data.AccountProfile;
+import io.soramitsu.examplepoint.sdk.model.AccountAsset;
 import io.soramitsu.examplepoint.sdk.model.AccountTransaction;
-import io.soramitsu.examplepoint.sdk.model.UaidBindings;
-import io.soramitsu.examplepoint.sdk.model.UaidManifestInventory;
-import io.soramitsu.examplepoint.sdk.model.UaidPortfolio;
 
 public interface WalletView extends LoadingView {
     Activity getActivity();
@@ -34,14 +32,9 @@ public interface WalletView extends LoadingView {
 
     void setRefreshing(boolean refreshing);
 
-    void setRefreshEnabled(boolean enable);
-
     void renderWallet(AccountProfile profile,
-                      UaidPortfolio portfolio,
-                      UaidBindings bindings,
-                      UaidManifestInventory manifests,
+                      List<AccountAsset> assets,
                       List<AccountTransaction> transactions,
-                      boolean usingCachedData,
                       long syncedAtMs);
 
     void showError(String message);

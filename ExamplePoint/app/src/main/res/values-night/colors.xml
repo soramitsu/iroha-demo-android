@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#DB0622</color>
+    <color name="colorPrimaryDark">#DE2B3C</color>
+    <color name="colorAccent">#FF5252</color>
+    <color name="glass_background_start">#121625</color>
+    <color name="glass_background_end">#2B1033</color>
+    <color name="glass_highlight">#80FFFFFF</color>
+    <color name="glass_surface">#40FFFFFF</color>
+    <color name="glass_surface_alt">#26FFFFFF</color>
+    <color name="glass_stroke">#66FFFFFF</color>
+    <color name="glass_accent">#FF7BC3</color>
+    <color name="sakura_outer_light">#FFF7CC</color>
+    <color name="sakura_inner_light">#FFD5EC</color>
+    <color name="sakura_outer_dark">#FFC8E4</color>
+    <color name="sakura_inner_dark">#FF9DC7</color>
+
+    <!-- Text & Icon -->
+    <color name="text_icons">#B6B6B6</color>
+    <color name="primary_text">#FAFAFA</color>
+    <color name="secondary_text">#E0E0E0</color>
+    <color name="divider_color">#4DFFFFFF</color>
+    <color name="link_color">#81D4FA</color>
+
+    <!-- Greyscales -->
+    <color name="grey200">#2A2D38</color>
+    <color name="grey300">#3C3F4E</color>
+    <color name="grey400">#55586A</color>
+    <color name="grey600">#979BB3</color>
+    <color name="black">#121212</color>
+    <color name="white">#FAFAFA</color>
+    <color name="grey">#66FFFFFF</color>
+
+    <!-- Others -->
+    <color name="red600">#FF6F6F</color>
+    <color name="pink600">#FF8FC7</color>
+    <color name="purple600">#B388FF</color>
+    <color name="blue600">#82B1FF</color>
+    <color name="cyan600">#4DD0E1</color>
+    <color name="green600">#66BB6A</color>
+    <color name="yellow600">#FDD835</color>
+    <color name="orange600">#FFB74D</color>
+    <color name="brown600">#8D6E63</color>
+    <color name="light_green600">#9CCC65</color>
+
+    <color name="receiver">#FDD835</color>
+    <color name="sender">#5CB85C</color>
+</resources>

@@ -116,11 +116,6 @@ public class AssetReceiveFragment extends Fragment implements AssetReceiveView, 
     public void renderShareInfo(AccountShareInfo info) {
         binding.accountName.setText(info.getDisplayName());
         binding.accountId.setText(getString(R.string.wallet_account_label, info.getAccountId()));
-        if (info.getUaid() == null || info.getUaid().isEmpty()) {
-            binding.accountUaid.setText(R.string.receive_uaid_unknown);
-        } else {
-            binding.accountUaid.setText(getString(R.string.receive_uaid_label, info.getUaid()));
-        }
         if (info.getIdentityStatement() == null || info.getIdentityStatement().isEmpty()) {
             binding.accountIas.setText(R.string.receive_ias_unknown);
             lastIdentityStatement = null;

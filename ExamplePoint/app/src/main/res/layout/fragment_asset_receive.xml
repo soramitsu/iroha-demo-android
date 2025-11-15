@@ -64,15 +64,6 @@
                                 android:textColor="@color/secondary_text"
                                 android:textSize="14sp"
                                 tools:text="Account: snx1...@wonderland" />
-
-                            <TextView
-                                android:id="@+id/account_uaid"
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:layout_marginTop="2dp"
-                                android:textColor="@color/secondary_text"
-                                android:textSize="12sp"
-                                tools:text="UAID: uaid:abcd..." />
                         </LinearLayout>
                     </com.google.android.material.card.MaterialCardView>
 

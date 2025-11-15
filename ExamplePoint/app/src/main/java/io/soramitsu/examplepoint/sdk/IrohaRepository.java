@@ -28,9 +28,6 @@ import io.soramitsu.examplepoint.sdk.model.AccountAsset;
 import io.soramitsu.examplepoint.sdk.model.AccountReceiveState;
 import io.soramitsu.examplepoint.sdk.model.AccountShareInfo;
 import io.soramitsu.examplepoint.sdk.model.AccountTransaction;
-import io.soramitsu.examplepoint.sdk.model.UaidBindings;
-import io.soramitsu.examplepoint.sdk.model.UaidManifestInventory;
-import io.soramitsu.examplepoint.sdk.model.UaidPortfolio;
 import io.soramitsu.examplepoint.sdk.registration.AccountRegistrationRequest;
 import org.hyperledger.iroha.android.IrohaKeyManager;
 import org.hyperledger.iroha.android.address.AccountAddress;
@@ -53,7 +50,6 @@ public class IrohaRepository {
     private final ToriiConfig toriiConfig;
     private final ToriiClient toriiClient;
     private final AccountPrefs accountPrefs;
-    private final UaidCache uaidCache;
     private final IrohaKeyManager keyManager;
     private final KeyBackupManager keyBackupManager;
     private final NoritoCodecAdapter codecAdapter;
@@ -64,7 +60,6 @@ public class IrohaRepository {
         this.toriiConfig = ToriiConfig.fromBuildConfig();
         this.toriiClient = new ToriiClient(toriiConfig);
         this.accountPrefs = new AccountPrefs(this.context);
-        this.uaidCache = new UaidCache(this.context);
         this.keyManager = IrohaKeyManager.withDefaultProviders();
         this.codecAdapter = new NoritoJavaCodecAdapter();
         this.executor = Executors.newSingleThreadExecutor(r -> {
@@ -163,7 +158,6 @@ public class IrohaRepository {
                 request.getDisplayName(),
                 keyAlias,
                 toriiConfig.defaultAssetId(),
-                uaid,
                 identityManifest);
         accountPrefs.save(profile);
         return profile;
@@ -194,90 +188,6 @@ public class IrohaRepository {
                         toriiClient.fetchExplorerAccountQr(shareInfo.getAccountId(), "ih58");
                 return new AccountReceiveState(shareInfo, assets, qrSnapshot);
             } catch (IOException | ToriiException | RuntimeException e) {
-                throw new CompletionException(e);
-            }
-        }, executor);
-    }
-
-    public static final class RepositoryResult<T> {
-        private final T data;
-        private final boolean fromCache;
-        private final long timestampMs;
-
-        public RepositoryResult(T data, boolean fromCache, long timestampMs) {
-            this.data = data;
-            this.fromCache = fromCache;
-            this.timestampMs = timestampMs;
-        }
-
-        public T getData() {
-            return data;
-        }
-
-        public boolean isFromCache() {
-            return fromCache;
-        }
-
-        public long getTimestampMs() {
-            return timestampMs;
-        }
-    }
-
-    public CompletableFuture<RepositoryResult<UaidPortfolio>> fetchUaidPortfolio() {
-        return CompletableFuture.supplyAsync(() -> {
-            AccountProfile profile = getAccountProfile();
-            if (profile.getUaid() == null || profile.getUaid().trim().isEmpty()) {
-                throw new IllegalStateException("UAID is not available for this profile");
-            }
-            try {
-                UaidPortfolio portfolio = toriiClient.fetchUaidPortfolio(profile.getUaid());
-                uaidCache.savePortfolio(portfolio);
-                return new RepositoryResult<>(portfolio, false, System.currentTimeMillis());
-            } catch (IOException | ToriiException e) {
-                UaidCache.CachedValue<UaidPortfolio> cached = uaidCache.loadPortfolio();
-                if (cached != null) {
-                    return new RepositoryResult<>(cached.getValue(), true, cached.getTimestampMs());
-                }
-                throw new CompletionException(e);
-            }
-        }, executor);
-    }
-
-    public CompletableFuture<RepositoryResult<UaidBindings>> fetchUaidBindings() {
-        return CompletableFuture.supplyAsync(() -> {
-            AccountProfile profile = getAccountProfile();
-            if (profile.getUaid() == null || profile.getUaid().trim().isEmpty()) {
-                throw new IllegalStateException("UAID is not available for this profile");
-            }
-            try {
-                UaidBindings bindings = toriiClient.fetchUaidBindings(profile.getUaid());
-                uaidCache.saveBindings(bindings);
-                return new RepositoryResult<>(bindings, false, System.currentTimeMillis());
-            } catch (IOException | ToriiException e) {
-                UaidCache.CachedValue<UaidBindings> cached = uaidCache.loadBindings();
-                if (cached != null) {
-                    return new RepositoryResult<>(cached.getValue(), true, cached.getTimestampMs());
-                }
-                throw new CompletionException(e);
-            }
-        }, executor);
-    }
-
-    public CompletableFuture<RepositoryResult<UaidManifestInventory>> fetchUaidManifests() {
-        return CompletableFuture.supplyAsync(() -> {
-            AccountProfile profile = getAccountProfile();
-            if (profile.getUaid() == null || profile.getUaid().trim().isEmpty()) {
-                throw new IllegalStateException("UAID is not available for this profile");
-            }
-            try {
-                UaidManifestInventory inventory = toriiClient.fetchUaidManifests(profile.getUaid());
-                uaidCache.saveManifests(inventory);
-                return new RepositoryResult<>(inventory, false, System.currentTimeMillis());
-            } catch (IOException | ToriiException e) {
-                UaidCache.CachedValue<UaidManifestInventory> cached = uaidCache.loadManifests();
-                if (cached != null) {
-                    return new RepositoryResult<>(cached.getValue(), true, cached.getTimestampMs());
-                }
                 throw new CompletionException(e);
             }
         }, executor);
@@ -326,7 +236,6 @@ public class IrohaRepository {
                     formats.networkPrefix,
                     profile.getDomain(),
                     profile.getPreferredAssetId(),
-                    profile.getUaid(),
                     identityJson
             );
         } catch (AccountAddressException e) {

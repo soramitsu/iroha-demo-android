@@ -6,6 +6,12 @@
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
+        <item name="android:fontFamily">@font/sora_family</item>
+        <item name="fontFamily">@font/sora_family</item>
+        <item name="android:windowBackground">@drawable/bg_app_gradient</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <item name="android:windowTranslucentStatus">true</item>
     </style>
 
     <style name="AppTheme.NoActionBar" parent="AppTheme">
@@ -38,6 +44,7 @@
         <item name="android:textSize">12sp</item>
         <item name="android:layout_marginStart">16dp</item>
         <item name="android:textAppearance">?android:attr/textAppearanceMedium</item>
+        <item name="android:fontFamily">@font/sora_family</item>
     </style>
 
     <style name="NavigationDrawerHeaderText.MainText">
@@ -52,11 +59,13 @@
     <style name="EditTextHint" parent="@style/TextAppearance.MaterialComponents.Body1">
         <item name="android:textColor">@color/white</item>
         <item name="android:textSize">20sp</item>
+        <item name="android:fontFamily">@font/sora_family</item>
     </style>
 
     <style name="EditTextErrorAppearance" parent="@android:style/TextAppearance">
         <item name="android:textColor">@color/black</item>
         <item name="android:textSize">12sp</item>
+        <item name="android:fontFamily">@font/sora_family</item>
     </style>
 
     <style name="EditTextColorControl">
@@ -69,6 +78,7 @@
     <style name="SimpleCalculatorButton">
         <item name="android:background">@color/colorPrimary</item>
         <item name="android:textColor">@color/white</item>
+        <item name="android:fontFamily">@font/sora_family</item>
     </style>
 
     <style name="SimpleCalculatorDeleteButton" parent="SimpleCalculatorButton">
@@ -88,11 +98,13 @@
         <item name="boxStrokeColor">@color/white</item>
         <item name="boxStrokeWidth">1dp</item>
         <item name="android:theme">@style/EditTextColorControl</item>
+        <item name="android:fontFamily">@font/sora_family</item>
     </style>
 
     <style name="SoraNexusRegistrationEditText" parent="@style/Widget.MaterialComponents.TextInputEditText.OutlinedBox">
         <item name="android:textColor">@color/white</item>
         <item name="android:textColorHint">@color/white</item>
         <item name="android:theme">@style/EditTextColorControl</item>
+        <item name="android:fontFamily">@font/sora_family</item>
     </style>
 </resources>

@@ -34,15 +34,6 @@
             tools:text="Account: snx1...@wonderland" />
 
         <TextView
-            android:id="@+id/wallet_account_uaid"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="2dp"
-            android:textColor="@color/white"
-            android:textSize="12sp"
-            tools:text="UAID: uaid:abcd..." />
-
-        <TextView
             android:id="@+id/wallet_account_ias"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
