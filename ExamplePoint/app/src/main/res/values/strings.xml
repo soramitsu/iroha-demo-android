@@ -55,6 +55,7 @@
     <string name="wallet">Wallet</string>
     <string name="to">to</string>
     <string name="transaction_history_not_found">Transaction history not found.</string>
+    <string name="wallet_overview_title">Portfolio</string>
     <string name="wallet_account_label">Account: %1$s</string>
     <string name="wallet_account_ias">Identity Manifest: %1$s</string>
     <string name="wallet_account_ias_unknown">Identity manifest unavailable.</string>
