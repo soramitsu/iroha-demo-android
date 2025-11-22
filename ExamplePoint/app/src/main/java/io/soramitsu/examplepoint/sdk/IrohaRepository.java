@@ -1,7 +1,6 @@
 package io.soramitsu.examplepoint.sdk;
 
 import android.content.Context;
-import android.content.pm.PackageManager;
 
 import androidx.annotation.NonNull;
 
@@ -244,8 +243,7 @@ public class IrohaRepository {
     }
 
     private NexusIdentityManifest buildIdentityManifest(AccountRegistrationRequest request) {
-        boolean hasStrongBox = context.getPackageManager()
-                .hasSystemFeature(PackageManager.FEATURE_STRONGBOX_KEYSTORE);
+        boolean hasStrongBox = keyManager.hasStrongBoxProvider();
         NexusDeviceReport report = NexusDeviceReport.capture(hasStrongBox);
         return NexusIdentityManifest.builder()
                 .setLegalName(request.getLegalName())

@@ -39,19 +39,22 @@ public final class UaidManifestInventory {
         private final String status;
         private final Lifecycle lifecycle;
         private final List<String> accounts;
+        private final String manifestJson;
 
         public ManifestRecord(long dataspaceId,
                               @Nullable String dataspaceAlias,
                               @NonNull String manifestHash,
                               @NonNull String status,
                               @NonNull Lifecycle lifecycle,
-                              @NonNull List<String> accounts) {
+                              @NonNull List<String> accounts,
+                              @NonNull String manifestJson) {
             this.dataspaceId = dataspaceId;
             this.dataspaceAlias = dataspaceAlias;
             this.manifestHash = manifestHash;
             this.status = status;
             this.lifecycle = lifecycle;
             this.accounts = Collections.unmodifiableList(new ArrayList<>(accounts));
+            this.manifestJson = manifestJson;
         }
 
         public long getDataspaceId() {
@@ -81,6 +84,11 @@ public final class UaidManifestInventory {
         @NonNull
         public List<String> getAccounts() {
             return accounts;
+        }
+
+        @NonNull
+        public String getManifestJson() {
+            return manifestJson;
         }
     }
 

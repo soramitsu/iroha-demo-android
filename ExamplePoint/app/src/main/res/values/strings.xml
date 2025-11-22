@@ -6,7 +6,6 @@
     <string name="name">Name</string>
     <string name="error">Error</string>
     <string name="during_registration">Registration…</string>
-    <string name="message_account_register_successful">Account registered!</string>
     <string name="placeholder_account_name">username:</string>
     <string name="key_setup_title">Create your SORA Nexus keys</string>
     <string name="key_setup_description">Generate a fresh key pair and keep the 12 or 24 word passphrase safe. You can also mirror the encrypted backup into Google Secure App Storage or iCloud.</string>
