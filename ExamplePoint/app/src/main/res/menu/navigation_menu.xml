@@ -14,6 +14,14 @@
             android:icon="@drawable/tab_send"
             android:title="@string/send" />
         <item
+            android:id="@+id/action_switch_account"
+            android:icon="@drawable/ic_switch_account_white_24dp"
+            android:title="@string/switch_account" />
+        <item
+            android:id="@+id/action_add_account"
+            android:icon="@drawable/ic_add_account_white_24dp"
+            android:title="@string/add_account" />
+        <item
             android:id="@+id/action_unregister"
             android:icon="@drawable/ic_exit_to_app_white_24dp"
             android:title="@string/unregister" />

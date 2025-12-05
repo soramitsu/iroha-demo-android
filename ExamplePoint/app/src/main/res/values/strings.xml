@@ -50,7 +50,7 @@
 ※Possessed your all points will be reset.</string>
     <string name="has_asset_amount">"%1$s IRH"</string>
     <string name="home">HOME</string>
-    <string name="unregister">Unregister</string>
+    <string name="unregister">Remove account</string>
     <string name="wallet">Wallet</string>
     <string name="to">to</string>
     <string name="transaction_history_not_found">Transaction history not found.</string>
@@ -92,4 +92,10 @@
     <string name="error_camera_permission_required">Camera permission is required to scan QR codes.</string>
     <string name="message_account_register_successful">Account registered!\nAccount: %1$s</string>
     <string name="unregister_confirmation">Are you sure you want to delete your local account keys?</string>
+    <string name="switch_account">Switch account</string>
+    <string name="add_account">Add account</string>
+    <string name="switch_account_item">%1$s (%2$s)</string>
+    <string name="switch_account_unavailable">No saved accounts found. Please register a new account.</string>
+    <string name="switch_account_failed">Unable to switch accounts. Please try again.</string>
+    <string name="remove_account_confirmation">Remove %1$s from this device? Your local keys for this account will be deleted.</string>
 </resources>

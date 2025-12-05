@@ -49,6 +49,8 @@ import com.google.android.material.navigation.NavigationView;
 import com.mikepenz.aboutlibraries.LibsBuilder;
 import com.mikepenz.aboutlibraries.ui.LibsSupportFragment;
 
+import java.util.List;
+
 import io.soramitsu.examplepoint.R;
 import io.soramitsu.examplepoint.databinding.ActivityMainBinding;
 import io.soramitsu.examplepoint.data.AccountProfile;
@@ -145,6 +147,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void initNavigationHeader() {
         View headerView = binding.navigation.getHeaderView(0);
+        headerView.setOnClickListener(v -> showAccountSwitcherDialog());
         try {
             AccountProfile profile = irohaRepository.getAccountProfile();
             ((TextView) headerView.findViewById(R.id.name)).setText(profile.getDisplayName());
@@ -193,15 +196,32 @@ public class MainActivity extends AppCompatActivity {
                                         NAVIGATION_ITEM_SEND
                                 );
                             }
+                        } else if (itemId == R.id.action_switch_account) {
+                            showAccountSwitcherDialog();
+                        } else if (itemId == R.id.action_add_account) {
+                            navigator.navigateToRegisterActivity(getApplicationContext());
                         } else if (itemId == R.id.action_unregister) {
+                            final AccountProfile profile = irohaRepository.hasAccountProfile()
+                                    ? irohaRepository.getAccountProfile()
+                                    : null;
                             new AlertDialog.Builder(MainActivity.this)
-                                    .setMessage(R.string.unregister_confirmation)
+                                    .setMessage(profile != null
+                                            ? getString(R.string.remove_account_confirmation, profile.getAccountId())
+                                            : getString(R.string.unregister_confirmation))
                                     .setNegativeButton(android.R.string.cancel, (dialogInterface, i) -> dialogInterface.dismiss())
                                     .setPositiveButton(android.R.string.ok, (dialogInterface, i) -> {
                                         dialogInterface.dismiss();
-                                        irohaRepository.clearAccountProfile();
+                                        if (profile != null) {
+                                            irohaRepository.removeAccount(profile.getAccountId());
+                                        } else {
+                                            irohaRepository.clearAccountProfile();
+                                        }
                                         Context c = getApplicationContext();
-                                        navigator.navigateToRegisterActivity(c);
+                                        if (irohaRepository.hasAccountProfile()) {
+                                            navigator.navigateToMainActivity(c);
+                                        } else {
+                                            navigator.navigateToRegisterActivity(c);
+                                        }
                                         finish();
                                     })
                                     .setCancelable(true)
@@ -212,7 +232,11 @@ public class MainActivity extends AppCompatActivity {
                                 binding.toolbar.setTitle(getString(R.string.open_source_license));
                                 switchFragment(libsFragment, "libs");
                                 allClearNavigationMenuChecked();
-                                binding.navigation.getMenu().getItem(4).setChecked(true);
+                                Menu menu = binding.navigation.getMenu();
+                                MenuItem ossItem = menu.findItem(R.id.action_oss);
+                                if (ossItem != null) {
+                                    ossItem.setChecked(true);
+                                }
                             }
                         }
                         binding.drawerLayout.closeDrawer(GravityCompat.START);
@@ -338,6 +362,48 @@ public class MainActivity extends AppCompatActivity {
         allClearBottomNavigationMenuChecked();
         binding.navigation.getMenu().getItem(nav).setChecked(true);
         binding.bottomNavigation.getMenu().getItem(nav).setChecked(true);
+    }
+
+    private void showAccountSwitcherDialog() {
+        List<AccountProfile> profiles = irohaRepository.getAccountProfiles();
+        if (profiles.isEmpty()) {
+            Toast.makeText(getApplicationContext(), R.string.switch_account_unavailable, Toast.LENGTH_SHORT).show();
+            return;
+        }
+        AccountProfile active = irohaRepository.hasAccountProfile() ? irohaRepository.getAccountProfile() : null;
+        int selectedIndex = -1;
+        String[] labels = new String[profiles.size()];
+        for (int i = 0; i < profiles.size(); i++) {
+            AccountProfile profile = profiles.get(i);
+            labels[i] = getString(R.string.switch_account_item, profile.getDisplayName(), profile.getAccountId());
+            if (active != null && profile.getAccountId().equals(active.getAccountId())) {
+                selectedIndex = i;
+            }
+        }
+        if (selectedIndex < 0) {
+            selectedIndex = 0;
+        }
+        final int[] chosenIndex = new int[]{selectedIndex};
+        new AlertDialog.Builder(this)
+                .setTitle(R.string.switch_account)
+                .setSingleChoiceItems(labels, selectedIndex, (dialog, which) -> chosenIndex[0] = which)
+                .setNegativeButton(android.R.string.cancel, null)
+                .setNeutralButton(R.string.add_account, (dialog, which) -> {
+                    navigator.navigateToRegisterActivity(getApplicationContext());
+                })
+                .setPositiveButton(R.string.switch_account, (dialog, which) -> {
+                    if (chosenIndex[0] < 0 || chosenIndex[0] >= profiles.size()) {
+                        return;
+                    }
+                    String accountId = profiles.get(chosenIndex[0]).getAccountId();
+                    if (irohaRepository.setActiveAccount(accountId)) {
+                        navigator.navigateToMainActivity(getApplicationContext());
+                        finish();
+                    } else {
+                        Toast.makeText(getApplicationContext(), R.string.switch_account_failed, Toast.LENGTH_SHORT).show();
+                    }
+                })
+                .show();
     }
 
     private void setKeyboardListener(final OnKeyboardVisibilityListener listener) {

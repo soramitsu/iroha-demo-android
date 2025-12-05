@@ -73,9 +73,21 @@ public class IrohaRepository {
         return accountPrefs.load().isPresent();
     }
 
+    public List<AccountProfile> getAccountProfiles() {
+        return accountPrefs.loadAll();
+    }
+
     public AccountProfile getAccountProfile() {
         return accountPrefs.load().orElseThrow(() ->
                 new IllegalStateException("Account profile is not initialised. Register an account first."));
+    }
+
+    public boolean setActiveAccount(String accountId) {
+        return accountPrefs.setActiveAccount(accountId);
+    }
+
+    public boolean removeAccount(String accountId) {
+        return accountPrefs.removeAccount(accountId);
     }
 
     public KeyBackupManager getKeyBackupManager() {
@@ -214,7 +226,7 @@ public class IrohaRepository {
     }
 
     public void clearAccountProfile() {
-        accountPrefs.clear();
+        accountPrefs.load().ifPresent(profile -> accountPrefs.removeAccount(profile.getAccountId()));
     }
 
     private AccountShareInfo buildAccountShareInfo(AccountProfile profile) {

@@ -17,6 +17,7 @@ def versions = [
         jetbrainsAnnotations : '24.0.1',
         securityCrypto       : '1.1.0-alpha06',
         junit                : '4.13.2',
+        orgJson              : '20231013',
         androidxTestExt      : '1.1.5',
         espresso             : '3.5.1',
         androidxTestRunner   : '1.5.2'
@@ -107,4 +108,5 @@ dependencies {
     }
 
     testImplementation "junit:junit:${versions.junit}"
+    testImplementation "org.json:json:${versions.orgJson}"
 }
