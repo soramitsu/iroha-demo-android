@@ -38,6 +38,8 @@
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/display_name"
                     style="@style/SoraNexusRegistrationEditText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
                     android:hint="@string/placeholder_account_name"
                     android:maxLength="32"
                     android:maxLines="1"
@@ -54,6 +56,8 @@
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/legal_name"
                     style="@style/SoraNexusRegistrationEditText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
                     android:hint="@string/registration_legal_name_hint"
                     android:maxLines="1"
                     tools:text="Alice Nakamoto" />
@@ -69,6 +73,8 @@
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/document_type"
                     style="@style/SoraNexusRegistrationEditText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
                     android:hint="@string/registration_document_type_hint"
                     android:maxLines="1"
                     android:textAllCaps="true"
@@ -85,6 +91,8 @@
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/document_number"
                     style="@style/SoraNexusRegistrationEditText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
                     android:hint="@string/registration_document_number_hint"
                     android:maxLines="1"
                     android:inputType="textCapCharacters"
@@ -101,6 +109,8 @@
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/residency"
                     style="@style/SoraNexusRegistrationEditText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
                     android:hint="@string/registration_residency_hint"
                     android:maxLines="1"
                     android:textAllCaps="true"
@@ -117,6 +127,8 @@
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/contact"
                     style="@style/SoraNexusRegistrationEditText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
                     android:hint="@string/registration_contact_hint"
                     android:inputType="textEmailAddress"
                     android:maxLines="1"

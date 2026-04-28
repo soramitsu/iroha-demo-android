@@ -59,6 +59,8 @@ import io.soramitsu.examplepoint.navigator.Navigator;
 import io.soramitsu.examplepoint.sdk.IrohaRepository;
 import io.soramitsu.examplepoint.view.fragment.AssetReceiveFragment;
 import io.soramitsu.examplepoint.view.fragment.AssetSenderFragment;
+import io.soramitsu.examplepoint.view.fragment.OfflineFragment;
+import io.soramitsu.examplepoint.view.fragment.SubscriptionHubFragment;
 import io.soramitsu.examplepoint.view.fragment.WalletFragment;
 
 public class MainActivity extends AppCompatActivity {
@@ -66,7 +68,9 @@ public class MainActivity extends AppCompatActivity {
 
     private static final int NAVIGATION_ITEM_RECEIVE = 0;
     private static final int NAVIGATION_ITEM_WALLET = 1;
-    private static final int NAVIGATION_ITEM_SEND = 2;
+    private static final int NAVIGATION_ITEM_SUBSCRIPTIONS = 2;
+    private static final int NAVIGATION_ITEM_OFFLINE = 3;
+    private static final int NAVIGATION_ITEM_SEND = 4;
 
     private Navigator navigator = Navigator.getInstance();
     private IrohaRepository irohaRepository;
@@ -75,8 +79,10 @@ public class MainActivity extends AppCompatActivity {
     private InputMethodManager inputMethodManager;
 
     private WalletFragment walletFragment;
+    private SubscriptionHubFragment subscriptionHubFragment;
     private AssetSenderFragment assetSenderFragment;
     private AssetReceiveFragment assetReceiveFragment;
+    private OfflineFragment offlineFragment;
     private LibsSupportFragment libsFragment;
 
     public interface MainActivityListener {
@@ -186,6 +192,26 @@ public class MainActivity extends AppCompatActivity {
                                         NAVIGATION_ITEM_WALLET
                                 );
                             }
+                        } else if (itemId == R.id.action_subscriptions) {
+                            if (!isChecked) {
+                                Log.d(TAG, "onNavigationItemSelected: Subscriptions");
+                                transitionTo(
+                                        subscriptionHubFragment,
+                                        SubscriptionHubFragment.TAG,
+                                        R.string.subscriptions,
+                                        NAVIGATION_ITEM_SUBSCRIPTIONS
+                                );
+                            }
+                        } else if (itemId == R.id.action_offline) {
+                            if (!isChecked) {
+                                Log.d(TAG, "onNavigationItemSelected: Offline");
+                                transitionTo(
+                                        offlineFragment,
+                                        OfflineFragment.TAG,
+                                        R.string.offline,
+                                        NAVIGATION_ITEM_OFFLINE
+                                );
+                            }
                         } else if (itemId == R.id.action_sender) {
                             if (!isChecked) {
                                 Log.d(TAG, "onNavigationItemSelected: Sender");
@@ -270,6 +296,22 @@ public class MainActivity extends AppCompatActivity {
                                         R.string.wallet,
                                         NAVIGATION_ITEM_WALLET
                                 );
+                            } else if (itemId == R.id.action_subscriptions) {
+                                Log.d(TAG, "onNavigationItemSelected: Subscriptions");
+                                transitionTo(
+                                        subscriptionHubFragment,
+                                        SubscriptionHubFragment.TAG,
+                                        R.string.subscriptions,
+                                        NAVIGATION_ITEM_SUBSCRIPTIONS
+                                );
+                            } else if (itemId == R.id.action_offline) {
+                                Log.d(TAG, "onNavigationItemSelected: Offline");
+                                transitionTo(
+                                        offlineFragment,
+                                        OfflineFragment.TAG,
+                                        R.string.offline,
+                                        NAVIGATION_ITEM_OFFLINE
+                                );
                             } else if (itemId == R.id.action_sender) {
                                 Log.d(TAG, "onNavigationItemSelected: Sender");
                                 transitionTo(
@@ -308,13 +350,21 @@ public class MainActivity extends AppCompatActivity {
         final FragmentManager manager = getSupportFragmentManager();
         assetReceiveFragment = (AssetReceiveFragment) manager.findFragmentByTag(AssetReceiveFragment.TAG);
         walletFragment = (WalletFragment) manager.findFragmentByTag(WalletFragment.TAG);
+        subscriptionHubFragment = (SubscriptionHubFragment) manager.findFragmentByTag(SubscriptionHubFragment.TAG);
         assetSenderFragment = (AssetSenderFragment) manager.findFragmentByTag(AssetSenderFragment.TAG);
+        offlineFragment = (OfflineFragment) manager.findFragmentByTag(OfflineFragment.TAG);
 
         if (assetReceiveFragment == null) {
             assetReceiveFragment = AssetReceiveFragment.newInstance();
         }
         if (walletFragment == null) {
             walletFragment = WalletFragment.newInstance();
+        }
+        if (subscriptionHubFragment == null) {
+            subscriptionHubFragment = SubscriptionHubFragment.newInstance();
+        }
+        if (offlineFragment == null) {
+            offlineFragment = OfflineFragment.newInstance();
         }
         if (assetSenderFragment == null) {
             assetSenderFragment = AssetSenderFragment.newInstance();

@@ -79,7 +79,7 @@ public final class KeyBackupManager {
         final List<String> mnemonicWords = mnemonicGenerator.generate(length);
         final char[] passphrase = toPassphraseChars(mnemonicWords);
         try {
-            keyManager.generateOrLoad(keyAlias, IrohaKeyManager.KeySecurityPreference.HARDWARE_PREFERRED);
+            keyManager.generateOrLoad(keyAlias, IrohaKeyManager.KeySecurityPreference.SOFTWARE_ONLY);
             final KeyExportBundle bundle = keyManager.exportDeterministicKey(keyAlias, passphrase);
             return new KeyBackupPlan(
                     keyAlias,

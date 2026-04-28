@@ -5,8 +5,6 @@ import androidx.annotation.NonNull;
 import java.util.Collections;
 import java.util.List;
 
-import io.soramitsu.examplepoint.network.ToriiClient;
-
 /**
  * Aggregates all information required to render the receive screen.
  */
@@ -14,16 +12,16 @@ public final class AccountReceiveState {
 
     private final AccountShareInfo shareInfo;
     private final List<AccountAsset> assets;
-    private final ToriiClient.ExplorerAccountQrSnapshot qrSnapshot;
+    private final String qrLiteral;
 
     public AccountReceiveState(
             @NonNull AccountShareInfo shareInfo,
             @NonNull List<AccountAsset> assets,
-            @NonNull ToriiClient.ExplorerAccountQrSnapshot qrSnapshot
+            @NonNull String qrLiteral
     ) {
         this.shareInfo = shareInfo;
         this.assets = Collections.unmodifiableList(assets);
-        this.qrSnapshot = qrSnapshot;
+        this.qrLiteral = qrLiteral;
     }
 
     @NonNull
@@ -37,7 +35,7 @@ public final class AccountReceiveState {
     }
 
     @NonNull
-    public ToriiClient.ExplorerAccountQrSnapshot getQrSnapshot() {
-        return qrSnapshot;
+    public String getQrLiteral() {
+        return qrLiteral;
     }
 }

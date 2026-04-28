@@ -1,9 +1,15 @@
 package io.soramitsu.examplepoint.network;
 
 import java.io.IOException;
+import java.net.URI;
+import java.nio.charset.StandardCharsets;
+import java.security.PrivateKey;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
+import java.util.concurrent.CompletionException;
 import java.util.concurrent.TimeUnit;
 
 import okhttp3.MediaType;
@@ -14,16 +20,19 @@ import okhttp3.Response;
 import okhttp3.ResponseBody;
 import okhttp3.HttpUrl;
 
-import org.hyperledger.iroha.android.norito.NoritoException;
-import org.hyperledger.iroha.android.norito.SignedTransactionEncoder;
 import org.hyperledger.iroha.android.tx.SignedTransaction;
 import org.hyperledger.iroha.android.nexus.UaidBindingsResponse;
 import org.hyperledger.iroha.android.nexus.UaidJsonParser;
 import org.hyperledger.iroha.android.nexus.UaidLiteral;
 import org.hyperledger.iroha.android.nexus.UaidManifestsResponse;
 import org.hyperledger.iroha.android.nexus.UaidPortfolioResponse;
+import org.hyperledger.iroha.android.client.ClientConfig;
+import org.hyperledger.iroha.android.client.CanonicalRequestSigner;
+import org.hyperledger.iroha.android.client.ClientResponse;
+import org.hyperledger.iroha.android.client.HttpClientTransport;
 
 import io.soramitsu.examplepoint.data.ToriiConfig;
+import io.soramitsu.examplepoint.sdk.AccountIdCodec;
 import io.soramitsu.examplepoint.sdk.model.AccountAsset;
 import io.soramitsu.examplepoint.sdk.model.AccountTransaction;
 import io.soramitsu.examplepoint.sdk.model.UaidBindings;
@@ -38,11 +47,12 @@ import com.google.gson.annotations.SerializedName;
  */
 public final class ToriiClient {
 
-    private static final MediaType NORITO_MEDIA = MediaType.get("application/x-norito");
     private static final MediaType JSON_MEDIA = MediaType.get("application/json");
+    private static final Duration DEFAULT_TIMEOUT = Duration.ofSeconds(30);
 
     private final OkHttpClient httpClient;
     private final ToriiConfig config;
+    private final HttpClientTransport transport;
     private final Gson gson = new Gson();
 
     public ToriiClient(ToriiConfig config) {
@@ -51,30 +61,28 @@ public final class ToriiClient {
                 .connectTimeout(15, TimeUnit.SECONDS)
                 .readTimeout(30, TimeUnit.SECONDS)
                 .build();
+        this.transport = HttpClientTransport.withDefaultExecutor(
+                ClientConfig.builder()
+                        .setBaseUri(URI.create(config.baseUrl().toString()))
+                        .setRequestTimeout(DEFAULT_TIMEOUT)
+                        .build()
+        );
     }
 
     public void submitTransaction(SignedTransaction transaction) throws IOException, ToriiException {
-        final byte[] payloadBytes;
         try {
-            payloadBytes = SignedTransactionEncoder.encode(transaction);
-        } catch (NoritoException e) {
-            throw new ToriiException("Failed to encode signed transaction payload", e);
-        }
-
-        HttpUrl url = config.baseUrl().newBuilder()
-                .addPathSegments("v1/pipeline/transactions")
-                .build();
-
-        Request request = new Request.Builder()
-                .url(url)
-                .post(RequestBody.create(payloadBytes, NORITO_MEDIA))
-                .header("Accept", "application/json")
-                .build();
-
-        try (Response response = httpClient.newCall(request).execute()) {
-            if (!response.isSuccessful()) {
-                throw new ToriiException(buildErrorMessage("submitTransaction", response));
+            ClientResponse response = transport.submitTransaction(transaction).join();
+            if (response.statusCode() < 200 || response.statusCode() >= 300) {
+                String payload = new String(response.body(), StandardCharsets.UTF_8).trim();
+                String message = "Torii submitTransaction failed with code " + response.statusCode();
+                if (!payload.isEmpty()) {
+                    message = message + ": " + payload;
+                }
+                throw new ToriiException(message);
             }
+        } catch (CompletionException ex) {
+            Throwable cause = ex.getCause() != null ? ex.getCause() : ex;
+            throw new ToriiException("Failed to submit signed transaction via SDK transport", cause);
         }
     }
 
@@ -120,7 +128,7 @@ public final class ToriiClient {
         if (limit > 0) {
             builder.addQueryParameter("limit", String.valueOf(limit));
         }
-        builder.addQueryParameter("address_format", "ih58");
+        builder.addQueryParameter("address_format", "i105");
 
         Request request = new Request.Builder()
                 .url(builder.build())
@@ -181,8 +189,8 @@ public final class ToriiClient {
                     List<UaidPortfolio.Asset> assets = new ArrayList<>();
                     for (UaidPortfolioResponse.UaidPortfolioAsset asset : account.assets()) {
                         assets.add(new UaidPortfolio.Asset(
-                                asset.assetId(),
-                                asset.assetDefinitionId(),
+                                asset.asset(),
+                                asset.scope(),
                                 asset.quantity()));
                     }
                     accountModels.add(new UaidPortfolio.Account(
@@ -282,35 +290,65 @@ public final class ToriiClient {
         }
     }
 
-    public ExplorerAccountQrSnapshot fetchExplorerAccountQr(String accountId, String addressFormat)
-            throws IOException, ToriiException {
-        HttpUrl.Builder builder = config.baseUrl().newBuilder()
-                .addPathSegments("v1/explorer/accounts")
-                .addPathSegment(accountId)
-                .addPathSegment("qr");
-        if (addressFormat != null && !addressFormat.trim().isEmpty()) {
-            builder.addQueryParameter("address_format", addressFormat.trim());
+    public String resolveAccountAlias(String alias,
+                                      String authorityAccountId,
+                                      PrivateKey authorityPrivateKey) throws IOException, ToriiException {
+        if (alias == null || alias.trim().isEmpty()) {
+            throw new IllegalArgumentException("Account alias is required");
+        }
+        if (authorityAccountId == null || authorityAccountId.trim().isEmpty()) {
+            throw new IllegalArgumentException("Authority account ID is required");
+        }
+        if (authorityPrivateKey == null) {
+            throw new IllegalArgumentException("Authority private key is required");
         }
 
-        Request request = new Request.Builder()
-                .url(builder.build())
-                .get()
-                .header("Accept", "application/json")
+        HttpUrl url = config.baseUrl().newBuilder()
+                .addPathSegments("v1/aliases/resolve")
                 .build();
+        AliasResolveRequest payload = new AliasResolveRequest(alias);
+        byte[] bodyBytes = gson.toJson(payload).getBytes(StandardCharsets.UTF_8);
 
-        try (Response response = httpClient.newCall(request).execute()) {
+        final Map<String, String> signedHeaders;
+        try {
+            signedHeaders = CanonicalRequestSigner.buildHeaders(
+                    "POST",
+                    URI.create(url.toString()),
+                    bodyBytes,
+                    authorityAccountId,
+                    authorityPrivateKey
+            );
+        } catch (RuntimeException ex) {
+            throw new ToriiException("Failed to sign alias resolution request", ex);
+        }
+
+        RequestBody requestBody = RequestBody.create(bodyBytes, JSON_MEDIA);
+        Request.Builder requestBuilder = new Request.Builder()
+                .url(url)
+                .post(requestBody)
+                .header("Accept", "application/json");
+        for (Map.Entry<String, String> header : signedHeaders.entrySet()) {
+            requestBuilder.header(header.getKey(), header.getValue());
+        }
+
+        try (Response response = httpClient.newCall(requestBuilder.build()).execute()) {
             if (!response.isSuccessful()) {
-                throw new ToriiException(buildErrorMessage("fetchExplorerAccountQr", response));
+                throw new ToriiException(buildErrorMessage("resolveAccountAlias", response));
             }
             ResponseBody body = response.body();
             if (body == null) {
-                throw new ToriiException("Torii explorer account QR endpoint returned no payload");
+                throw new ToriiException("Torii alias resolve endpoint returned no payload");
             }
-            ExplorerAccountQrResponse dto = gson.fromJson(body.charStream(), ExplorerAccountQrResponse.class);
-            if (dto == null) {
-                throw new ToriiException("Torii explorer account QR endpoint returned malformed payload");
+            AliasResolveResponse dto = gson.fromJson(body.charStream(), AliasResolveResponse.class);
+            if (dto == null
+                    || dto.alias == null || dto.alias.trim().isEmpty()
+                    || dto.accountId == null || dto.accountId.trim().isEmpty()) {
+                throw new ToriiException("Torii alias resolve endpoint returned malformed payload");
             }
-            return dto.toSnapshot();
+            if (!AccountIdCodec.isCanonicalAccountId(dto.accountId, config.i105Discriminant())) {
+                throw new ToriiException("Torii alias resolve endpoint returned a non-canonical account ID");
+            }
+            return dto.accountId;
         }
     }
 
@@ -348,6 +386,20 @@ public final class ToriiClient {
         List<TransactionItem> items;
     }
 
+    private static final class AliasResolveRequest {
+        String alias;
+
+        AliasResolveRequest(String alias) {
+            this.alias = alias;
+        }
+    }
+
+    private static final class AliasResolveResponse {
+        String alias;
+        @SerializedName("account_id")
+        String accountId;
+    }
+
     private static final class TransactionItem {
         @SerializedName("entrypoint_hash")
         String entrypointHash;
@@ -367,100 +419,4 @@ public final class ToriiClient {
         }
     }
 
-    private static final class ExplorerAccountQrResponse {
-        @SerializedName("canonical_id")
-        String canonicalId;
-        String literal;
-        @SerializedName("address_format")
-        String addressFormat;
-        @SerializedName("network_prefix")
-        Integer networkPrefix;
-        @SerializedName("error_correction")
-        String errorCorrection;
-        Integer modules;
-        @SerializedName("qr_version")
-        Integer qrVersion;
-        String svg;
-
-        ExplorerAccountQrSnapshot toSnapshot() {
-            if (canonicalId == null || literal == null || addressFormat == null
-                    || networkPrefix == null || errorCorrection == null
-                    || modules == null || qrVersion == null || svg == null) {
-                throw new IllegalStateException("ExplorerAccountQrResponse fields must not be null");
-            }
-            return new ExplorerAccountQrSnapshot(
-                    canonicalId,
-                    literal,
-                    addressFormat,
-                    networkPrefix,
-                    errorCorrection,
-                    modules,
-                    qrVersion,
-                    svg
-            );
-        }
-    }
-
-    public static final class ExplorerAccountQrSnapshot {
-        private final String canonicalId;
-        private final String literal;
-        private final String addressFormat;
-        private final int networkPrefix;
-        private final String errorCorrection;
-        private final int modules;
-        private final int qrVersion;
-        private final String svg;
-
-        public ExplorerAccountQrSnapshot(
-                String canonicalId,
-                String literal,
-                String addressFormat,
-                int networkPrefix,
-                String errorCorrection,
-                int modules,
-                int qrVersion,
-                String svg
-        ) {
-            this.canonicalId = canonicalId;
-            this.literal = literal;
-            this.addressFormat = addressFormat;
-            this.networkPrefix = networkPrefix;
-            this.errorCorrection = errorCorrection;
-            this.modules = modules;
-            this.qrVersion = qrVersion;
-            this.svg = svg;
-        }
-
-        public String getCanonicalId() {
-            return canonicalId;
-        }
-
-        public String getLiteral() {
-            return literal;
-        }
-
-        public String getAddressFormat() {
-            return addressFormat;
-        }
-
-        public int getNetworkPrefix() {
-            return networkPrefix;
-        }
-
-        public String getErrorCorrection() {
-            return errorCorrection;
-        }
-
-        public int getModules() {
-            return modules;
-        }
-
-        public int getQrVersion() {
-            return qrVersion;
-        }
-
-        public String getSvg() {
-            return svg;
-        }
-    }
 }

@@ -24,7 +24,9 @@ import com.google.zxing.WriterException;
 import io.soramitsu.examplepoint.R;
 import io.soramitsu.examplepoint.network.ToriiException;
 
+import org.hyperledger.iroha.android.KeyManagementException;
 import org.hyperledger.iroha.android.address.AccountAddress.AccountAddressException;
+import org.hyperledger.iroha.android.crypto.export.KeyExportException;
 
 public class ErrorMessageFactory {
 
@@ -46,6 +48,12 @@ public class ErrorMessageFactory {
         } else if (exception instanceof ToriiException) {
             return sanitizeMessage(exception, fallback);
         } else if (exception instanceof IllegalArgumentException) {
+            return sanitizeMessage(exception, fallback);
+        } else if (exception instanceof IllegalStateException) {
+            return sanitizeMessage(exception, fallback);
+        } else if (exception instanceof KeyManagementException) {
+            return sanitizeMessage(exception, fallback);
+        } else if (exception instanceof KeyExportException) {
             return sanitizeMessage(exception, fallback);
         }
         return fallback;

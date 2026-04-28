@@ -14,16 +14,24 @@ tasks.withType<JavaCompile>().configureEach {
     options.release.set(17)
 }
 
-val i23RootProperty = providers.gradleProperty("i23Dir").orElse("/Users/takemiyamakoto/dev/i23")
-val i23Root = file(i23RootProperty.get()).toPath().normalize()
-val irohaAndroidMain = i23Root.resolve("java/iroha_android/src/main/java")
-val noritoJavaMain = i23Root.resolve("java/norito_java/src/main/java")
-val irohaAndroidTest = i23Root.resolve("java/iroha_android/src/test/java")
-val irohaAndroidResources = i23Root.resolve("java/iroha_android/src/test/resources")
+val defaultIrohaDir: String = rootProject.projectDir
+    .toPath()
+    .resolve("../../iroha")
+    .normalize()
+    .toString()
+
+val irohaRootProperty = providers.gradleProperty("irohaDir")
+    .orElse(providers.gradleProperty("i23Dir"))
+    .orElse(defaultIrohaDir)
+val irohaRoot = file(irohaRootProperty.get()).toPath().normalize()
+val irohaAndroidMain = irohaRoot.resolve("java/iroha_android/src/main/java")
+val noritoJavaMain = irohaRoot.resolve("java/norito_java/src/main/java")
+val irohaAndroidTest = irohaRoot.resolve("java/iroha_android/src/test/java")
+val irohaAndroidResources = irohaRoot.resolve("java/iroha_android/src/test/resources")
 
 fun ensureDir(path: java.nio.file.Path, description: String) {
     if (!Files.exists(path)) {
-        error("Expected $description at $path. Make sure the i23 repository is checked out next to iroha-demo-android.")
+        error("Expected $description at $path. Make sure the iroha repository is checked out next to iroha-demo-android.")
     }
 }
 

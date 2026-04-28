@@ -16,6 +16,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 
+import io.soramitsu.examplepoint.sdk.AccountIdCodec;
 import io.soramitsu.examplepoint.sdk.identity.NexusIdentityManifest;
 
 /**
@@ -25,6 +26,7 @@ public final class AccountPrefs {
 
     private static final String PREFS_NAME = "iroha_account_profile";
     private static final String KEY_ADDRESS = "account_address";
+    private static final String KEY_ACCOUNT_ID = "account_id";
     private static final String KEY_DOMAIN = "domain";
     private static final String KEY_DISPLAY_NAME = "display_name";
     private static final String KEY_KEY_ALIAS = "key_alias";
@@ -34,13 +36,15 @@ public final class AccountPrefs {
     private static final String KEY_ACTIVE_ACCOUNT = "active_account_id";
 
     private final SharedPreferences prefs;
+    private final ToriiConfig toriiConfig;
 
     public AccountPrefs(Context context) {
-        this(context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE));
+        this(context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE), ToriiConfig.fromBuildConfig());
     }
 
-    AccountPrefs(SharedPreferences prefs) {
+    AccountPrefs(SharedPreferences prefs, ToriiConfig toriiConfig) {
         this.prefs = prefs;
+        this.toriiConfig = toriiConfig;
     }
 
     public synchronized Optional<AccountProfile> load() {
@@ -124,8 +128,14 @@ public final class AccountPrefs {
             final String assetId = prefs.getString(KEY_ASSET_ID, null);
             final String manifestJson = prefs.getString(KEY_IDENTITY_MANIFEST, null);
             final NexusIdentityManifest manifest = NexusIdentityManifest.fromStorageJson(manifestJson);
+            final String accountId;
+            try {
+                accountId = AccountIdCodec.migrateLegacyCanonicalHex(address, toriiConfig.i105Discriminant());
+            } catch (Exception e) {
+                throw new IllegalStateException("Unable to migrate legacy account ID", e);
+            }
             AccountProfile legacyProfile = new AccountProfile(
-                    address,
+                    accountId,
                     domain,
                     displayName,
                     keyAlias,
@@ -178,7 +188,7 @@ public final class AccountPrefs {
     private static JSONObject toJson(AccountProfile profile) {
         JSONObject obj = new JSONObject();
         try {
-            obj.put(KEY_ADDRESS, profile.getAccountAddressHex());
+            obj.put(KEY_ACCOUNT_ID, profile.getAccountId());
             obj.put(KEY_DOMAIN, profile.getDomain());
             obj.put(KEY_DISPLAY_NAME, profile.getDisplayName());
             obj.put(KEY_KEY_ALIAS, profile.getKeyAlias());
@@ -193,8 +203,18 @@ public final class AccountPrefs {
         return obj;
     }
 
-    private static AccountProfile parseAccount(JSONObject obj) throws JSONException {
-        final String address = obj.getString(KEY_ADDRESS);
+    private AccountProfile parseAccount(JSONObject obj) throws JSONException {
+        final String accountId;
+        if (obj.has(KEY_ACCOUNT_ID)) {
+            accountId = obj.getString(KEY_ACCOUNT_ID);
+        } else {
+            final String address = obj.getString(KEY_ADDRESS);
+            try {
+                accountId = AccountIdCodec.migrateLegacyCanonicalHex(address, toriiConfig.i105Discriminant());
+            } catch (Exception e) {
+                throw new JSONException("Unable to migrate legacy account ID: " + e.getMessage());
+            }
+        }
         final String domain = obj.getString(KEY_DOMAIN);
         final String displayName = obj.getString(KEY_DISPLAY_NAME);
         final String keyAlias = obj.getString(KEY_KEY_ALIAS);
@@ -204,7 +224,7 @@ public final class AccountPrefs {
                 : obj.optString(KEY_IDENTITY_MANIFEST, null);
         final NexusIdentityManifest manifest = NexusIdentityManifest.fromStorageJson(manifestJson);
         return new AccountProfile(
-                address,
+                accountId,
                 domain,
                 displayName,
                 keyAlias,

@@ -18,7 +18,7 @@ public final class ToriiConfig {
     private final String chainId;
     private final String domain;
     private final String defaultAssetId;
-    private final int ih58Prefix;
+    private final int i105Discriminant;
     @Nullable
     private final String adminAccountId;
     @Nullable
@@ -29,7 +29,7 @@ public final class ToriiConfig {
             @NonNull String chainId,
             @NonNull String domain,
             @NonNull String defaultAssetId,
-            int ih58Prefix,
+            int i105Discriminant,
             @Nullable String adminAccountId,
             @Nullable byte[] adminPrivateKey
     ) {
@@ -37,7 +37,7 @@ public final class ToriiConfig {
         this.chainId = chainId;
         this.domain = domain;
         this.defaultAssetId = defaultAssetId;
-        this.ih58Prefix = ih58Prefix;
+        this.i105Discriminant = i105Discriminant;
         this.adminAccountId = adminAccountId;
         this.adminPrivateKey = adminPrivateKey;
     }
@@ -62,8 +62,8 @@ public final class ToriiConfig {
         return defaultAssetId;
     }
 
-    public int ih58Prefix() {
-        return ih58Prefix;
+    public int i105Discriminant() {
+        return i105Discriminant;
     }
 
     public boolean hasAdminCredentials() {
@@ -93,7 +93,7 @@ public final class ToriiConfig {
                 BuildConfig.TORII_CHAIN_ID,
                 BuildConfig.TORII_DOMAIN,
                 BuildConfig.TORII_DEFAULT_ASSET_ID,
-                BuildConfig.TORII_IH58_PREFIX,
+                BuildConfig.TORII_I105_DISCRIMINANT,
                 emptyToNull(BuildConfig.TORII_ADMIN_ACCOUNT_ID),
                 parsePrivateKey(BuildConfig.TORII_ADMIN_PRIVATE_KEY)
         );

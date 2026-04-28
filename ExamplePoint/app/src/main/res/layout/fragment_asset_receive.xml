@@ -119,20 +119,20 @@
                             <TextView
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:text="@string/receive_ih58_label"
+                                android:text="@string/receive_account_id_label"
                                 android:textStyle="bold" />
 
                             <TextView
-                                android:id="@+id/ih58_value"
+                                android:id="@+id/account_id_value"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
                                 android:layout_marginTop="4dp"
                                 android:textIsSelectable="true"
                                 android:textSize="16sp"
-                                tools:text="ih58Literal" />
+                                tools:text="i105AccountId" />
 
                             <com.google.android.material.button.MaterialButton
-                                android:id="@+id/copy_ih58"
+                                android:id="@+id/copy_account_id"
                                 style="@style/Widget.MaterialComponents.Button.TextButton"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
@@ -156,20 +156,20 @@
                             <TextView
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:text="@string/receive_compressed_label"
+                                android:text="@string/receive_alias_label"
                                 android:textStyle="bold" />
 
                             <TextView
-                                android:id="@+id/compressed_value"
+                                android:id="@+id/alias_value"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
                                 android:layout_marginTop="4dp"
                                 android:textIsSelectable="true"
                                 android:textSize="16sp"
-                                tools:text="snx1..." />
+                                tools:text="name@domain.dataspace" />
 
                             <com.google.android.material.button.MaterialButton
-                                android:id="@+id/copy_compressed"
+                                android:id="@+id/copy_alias"
                                 style="@style/Widget.MaterialComponents.Button.TextButton"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
@@ -179,13 +179,13 @@
                     </com.google.android.material.card.MaterialCardView>
 
                     <TextView
-                        android:id="@+id/compressed_warning"
+                        android:id="@+id/alias_warning"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="8dp"
                         android:textColor="@color/orange600"
                         android:textSize="12sp"
-                        tools:text="Sora-only literal warning" />
+                        tools:text="Aliases resolve on-chain to the I105 account ID." />
 
                     <ImageView
                         android:id="@+id/qr_code"

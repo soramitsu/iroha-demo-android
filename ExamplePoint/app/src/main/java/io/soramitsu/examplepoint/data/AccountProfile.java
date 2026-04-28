@@ -10,7 +10,7 @@ import io.soramitsu.examplepoint.sdk.identity.NexusIdentityManifest;
  */
 public final class AccountProfile {
 
-    private final String accountAddressHex;
+    private final String accountId;
     private final String domain;
     private final String displayName;
     private final String keyAlias;
@@ -19,24 +19,19 @@ public final class AccountProfile {
     private final NexusIdentityManifest identityManifest;
 
     public AccountProfile(
-            @NonNull String accountAddressHex,
+            @NonNull String accountId,
             @NonNull String domain,
             @NonNull String displayName,
             @NonNull String keyAlias,
             @Nullable String preferredAssetId,
             @Nullable NexusIdentityManifest identityManifest
     ) {
-        this.accountAddressHex = accountAddressHex;
+        this.accountId = accountId;
         this.domain = domain;
         this.displayName = displayName;
         this.keyAlias = keyAlias;
         this.preferredAssetId = preferredAssetId;
         this.identityManifest = identityManifest;
-    }
-
-    @NonNull
-    public String getAccountAddressHex() {
-        return accountAddressHex;
     }
 
     @NonNull
@@ -46,7 +41,7 @@ public final class AccountProfile {
 
     @NonNull
     public String getAccountId() {
-        return accountAddressHex + "@" + domain;
+        return accountId;
     }
 
     @NonNull
@@ -71,7 +66,7 @@ public final class AccountProfile {
 
     public AccountProfile withPreferredAsset(@Nullable String assetId) {
         return new AccountProfile(
-                accountAddressHex,
+                accountId,
                 domain,
                 displayName,
                 keyAlias,

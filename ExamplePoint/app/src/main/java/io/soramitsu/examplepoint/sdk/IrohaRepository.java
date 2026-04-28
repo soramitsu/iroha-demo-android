@@ -5,6 +5,8 @@ import android.content.Context;
 import androidx.annotation.NonNull;
 
 import java.io.IOException;
+import java.net.URI;
+import java.time.Duration;
 import java.security.KeyPair;
 import java.util.Collections;
 import java.util.List;
@@ -14,23 +16,32 @@ import java.util.concurrent.CompletionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import io.soramitsu.examplepoint.R;
 import io.soramitsu.examplepoint.data.AccountPrefs;
 import io.soramitsu.examplepoint.data.AccountProfile;
 import io.soramitsu.examplepoint.data.ToriiConfig;
 import io.soramitsu.examplepoint.network.ToriiClient;
 import io.soramitsu.examplepoint.network.ToriiException;
+import io.soramitsu.examplepoint.subscription.SubscriptionBackendRepository;
+import io.soramitsu.examplepoint.subscription.SubscriptionCreateInput;
+import io.soramitsu.examplepoint.subscription.SubscriptionRecord;
+import io.soramitsu.examplepoint.subscription.SubscriptionUiMetadataStore;
+import io.soramitsu.examplepoint.subscription.SubscriptionUsageInput;
+import io.soramitsu.examplepoint.connect.ConnectSigningIdentity;
 import io.soramitsu.examplepoint.sdk.backup.KeyBackupManager;
 import io.soramitsu.examplepoint.sdk.identity.NexusDeviceReport;
 import io.soramitsu.examplepoint.sdk.identity.NexusIdentityManifest;
 import io.soramitsu.examplepoint.sdk.identity.NexusUaidFactory;
+import io.soramitsu.examplepoint.sdk.key.ExposedPrivateKeyEncoder;
+import io.soramitsu.examplepoint.sdk.key.ExportableKeyManagerFactory;
 import io.soramitsu.examplepoint.sdk.model.AccountAsset;
 import io.soramitsu.examplepoint.sdk.model.AccountReceiveState;
 import io.soramitsu.examplepoint.sdk.model.AccountShareInfo;
 import io.soramitsu.examplepoint.sdk.model.AccountTransaction;
 import io.soramitsu.examplepoint.sdk.registration.AccountRegistrationRequest;
 import org.hyperledger.iroha.android.IrohaKeyManager;
-import org.hyperledger.iroha.android.address.AccountAddress;
-import org.hyperledger.iroha.android.address.AccountAddress.AccountAddressException;
+import org.hyperledger.iroha.android.client.ClientConfig;
+import org.hyperledger.iroha.android.client.HttpClientTransport;
 import org.hyperledger.iroha.android.crypto.Signer;
 import org.hyperledger.iroha.android.model.InstructionBox;
 import org.hyperledger.iroha.android.model.instructions.RegisterAccountInstruction;
@@ -52,6 +63,7 @@ public class IrohaRepository {
     private final IrohaKeyManager keyManager;
     private final KeyBackupManager keyBackupManager;
     private final NoritoCodecAdapter codecAdapter;
+    private final SubscriptionBackendRepository subscriptionRepository;
     private final ExecutorService executor;
 
     public IrohaRepository(@NonNull Context context) {
@@ -59,13 +71,24 @@ public class IrohaRepository {
         this.toriiConfig = ToriiConfig.fromBuildConfig();
         this.toriiClient = new ToriiClient(toriiConfig);
         this.accountPrefs = new AccountPrefs(this.context);
-        this.keyManager = IrohaKeyManager.withDefaultProviders();
+        this.keyManager = ExportableKeyManagerFactory.create(this.context);
         this.codecAdapter = new NoritoJavaCodecAdapter();
         this.executor = Executors.newSingleThreadExecutor(r -> {
             Thread thread = new Thread(r, "IrohaRepository");
             thread.setDaemon(true);
             return thread;
         });
+        ClientConfig clientConfig = ClientConfig.builder()
+                .setBaseUri(URI.create(toriiConfig.baseUrl().toString()))
+                .setRequestTimeout(Duration.ofSeconds(30))
+                .build();
+        HttpClientTransport transport = HttpClientTransport.withDefaultExecutor(clientConfig);
+        this.subscriptionRepository = new SubscriptionBackendRepository(
+                transport.subscriptionToriiClient(),
+                toriiConfig.defaultAssetId(),
+                toriiConfig.domain(),
+                new SubscriptionUiMetadataStore(this.context)
+        );
         this.keyBackupManager = new KeyBackupManager(this.context, this.keyManager, executor);
     }
 
@@ -80,6 +103,24 @@ public class IrohaRepository {
     public AccountProfile getAccountProfile() {
         return accountPrefs.load().orElseThrow(() ->
                 new IllegalStateException("Account profile is not initialised. Register an account first."));
+    }
+
+    @NonNull
+    public ConnectSigningIdentity loadActiveConnectSigningIdentity() {
+        AccountProfile profile = getAccountProfile();
+        try {
+            KeyPair keyPair = keyManager.generateOrLoad(
+                    profile.getKeyAlias(),
+                    IrohaKeyManager.KeySecurityPreference.SOFTWARE_ONLY);
+            byte[] privateKey = ExposedPrivateKeyEncoder.extractEd25519PrivateKey(keyPair.getPrivate());
+            Signer signer = Signers.ed25519(privateKey);
+            return new ConnectSigningIdentity(
+                    profile.getAccountId(),
+                    profile.getDisplayName(),
+                    signer);
+        } catch (Exception ex) {
+            throw new IllegalStateException("Unable to load active connect signing identity", ex);
+        }
     }
 
     public boolean setActiveAccount(String accountId) {
@@ -120,18 +161,15 @@ public class IrohaRepository {
         }
         final KeyPair keyPair = keyManager.generateOrLoad(
                 keyAlias,
-                IrohaKeyManager.KeySecurityPreference.HARDWARE_PREFERRED);
+                IrohaKeyManager.KeySecurityPreference.SOFTWARE_ONLY);
 
         final byte[] publicKey = KeyEncodingUtils.extractEd25519PublicKey(keyPair.getPublic());
         final NexusIdentityManifest identityManifest = buildIdentityManifest(request);
         final String uaid = NexusUaidFactory.derive(identityManifest);
-        final AccountAddress accountAddress = AccountAddress.fromAccount(
-                toriiConfig.domain(),
+        final String accountId = AccountIdCodec.encodeDomainlessAccount(
                 publicKey,
-                "ed25519");
-
-        final String canonicalHex = accountAddress.canonicalHex();
-        final String accountId = canonicalHex + "@" + toriiConfig.domain();
+                "ed25519",
+                toriiConfig.i105Discriminant());
 
         final RegisterAccountInstruction.Builder instructionBuilder =
                 RegisterAccountInstruction.builder()
@@ -164,7 +202,7 @@ public class IrohaRepository {
         toriiClient.submitTransaction(signedTransaction);
 
         final AccountProfile profile = new AccountProfile(
-                canonicalHex,
+                accountId,
                 toriiConfig.domain(),
                 request.getDisplayName(),
                 keyAlias,
@@ -195,19 +233,29 @@ public class IrohaRepository {
             AccountShareInfo shareInfo = buildAccountShareInfo(profile);
             try {
                 List<AccountAsset> assets = toriiClient.fetchAccountAssets(profile.getAccountId());
-                ToriiClient.ExplorerAccountQrSnapshot qrSnapshot =
-                        toriiClient.fetchExplorerAccountQr(shareInfo.getAccountId(), "ih58");
-                return new AccountReceiveState(shareInfo, assets, qrSnapshot);
+                return new AccountReceiveState(shareInfo, assets, shareInfo.getAccountId());
             } catch (IOException | ToriiException | RuntimeException e) {
                 throw new CompletionException(e);
             }
         }, executor);
     }
 
-    public CompletableFuture<Void> transferAsset(String receiverAccountId, String amount) {
-        return CompletableFuture.runAsync(() -> {
+    public CompletableFuture<String> transferAsset(String receiverAccountLiteral, String amount) {
+        return CompletableFuture.supplyAsync(() -> {
             try {
+                String receiverAccountId = resolveAccountTargetInternal(receiverAccountLiteral);
                 transferInternal(receiverAccountId, amount);
+                return receiverAccountId;
+            } catch (Exception ex) {
+                throw new CompletionException(ex);
+            }
+        }, executor);
+    }
+
+    public CompletableFuture<String> resolveAccountTarget(String rawLiteral) {
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                return resolveAccountTargetInternal(rawLiteral);
             } catch (Exception ex) {
                 throw new CompletionException(ex);
             }
@@ -225,33 +273,89 @@ public class IrohaRepository {
         }, executor);
     }
 
+    public CompletableFuture<List<SubscriptionRecord>> fetchSubscriptions() {
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                AccountProfile profile = getAccountProfile();
+                return subscriptionRepository.fetchSubscriptions(profile.getAccountId());
+            } catch (RuntimeException ex) {
+                throw new CompletionException(ex);
+            }
+        }, executor);
+    }
+
+    public CompletableFuture<SubscriptionRecord> createSubscription(@NonNull SubscriptionCreateInput input) {
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                AccountProfile profile = getAccountProfile();
+                String privateKey = deriveExposedPrivateKey(profile);
+                return subscriptionRepository.createSubscription(profile.getAccountId(), privateKey, input);
+            } catch (Exception ex) {
+                throw new CompletionException(ex);
+            }
+        }, executor);
+    }
+
+    public CompletableFuture<Void> pauseSubscription(@NonNull String subscriptionId) {
+        return CompletableFuture.runAsync(() -> executeSubscriptionAction(subscriptionId, Action.PAUSE), executor);
+    }
+
+    public CompletableFuture<Void> resumeSubscription(@NonNull String subscriptionId) {
+        return CompletableFuture.runAsync(() -> executeSubscriptionAction(subscriptionId, Action.RESUME), executor);
+    }
+
+    public CompletableFuture<Void> cancelSubscription(@NonNull String subscriptionId) {
+        return CompletableFuture.runAsync(() -> executeSubscriptionAction(subscriptionId, Action.CANCEL), executor);
+    }
+
+    public CompletableFuture<Void> keepSubscription(@NonNull String subscriptionId) {
+        return CompletableFuture.runAsync(() -> executeSubscriptionAction(subscriptionId, Action.KEEP), executor);
+    }
+
+    public CompletableFuture<Void> chargeNowSubscription(@NonNull String subscriptionId) {
+        return CompletableFuture.runAsync(() -> executeSubscriptionAction(subscriptionId, Action.CHARGE_NOW), executor);
+    }
+
+    public CompletableFuture<Void> recordSubscriptionUsage(@NonNull SubscriptionUsageInput input) {
+        return CompletableFuture.runAsync(() -> {
+            try {
+                AccountProfile profile = getAccountProfile();
+                String privateKey = deriveExposedPrivateKey(profile);
+                subscriptionRepository.recordSubscriptionUsage(profile.getAccountId(), privateKey, input);
+            } catch (Exception ex) {
+                throw new CompletionException(ex);
+            }
+        }, executor);
+    }
+
     public void clearAccountProfile() {
         accountPrefs.load().ifPresent(profile -> accountPrefs.removeAccount(profile.getAccountId()));
     }
 
     private AccountShareInfo buildAccountShareInfo(AccountProfile profile) {
-        try {
-            AccountAddress address = AccountAddress.fromCanonicalHex(profile.getAccountAddressHex());
-            AccountAddress.DisplayFormats formats = address.displayFormats(toriiConfig.ih58Prefix());
-            String accountId = formats.ih58 + "@" + profile.getDomain();
-            String identityJson = profile.getIdentityManifest() != null
-                    ? profile.getIdentityManifest().toCanonicalJson()
-                    : null;
-            return new AccountShareInfo(
-                    profile.getDisplayName(),
-                    accountId,
-                    address.canonicalHex(),
-                    formats.ih58,
-                    formats.compressed,
-                    formats.compressedWarning,
-                    formats.networkPrefix,
-                    profile.getDomain(),
-                    profile.getPreferredAssetId(),
-                    identityJson
-            );
-        } catch (AccountAddressException e) {
-            throw new CompletionException(e);
+        String identityJson = profile.getIdentityManifest() != null
+                ? profile.getIdentityManifest().toCanonicalJson()
+                : null;
+        return new AccountShareInfo(
+                profile.getDisplayName(),
+                profile.getAccountId(),
+                profile.getDomain(),
+                profile.getPreferredAssetId(),
+                identityJson
+        );
+    }
+
+    private String resolveAccountTargetInternal(String rawLiteral) throws Exception {
+        AccountLiteralFormatter.ParsedAccountLiteral parsed =
+                AccountLiteralFormatter.normalize(rawLiteral, toriiConfig);
+        if (!parsed.isAlias()) {
+            return parsed.literal();
         }
+        AccountProfile profile = getAccountProfile();
+        KeyPair keyPair = keyManager.generateOrLoad(
+                profile.getKeyAlias(),
+                IrohaKeyManager.KeySecurityPreference.SOFTWARE_ONLY);
+        return toriiClient.resolveAccountAlias(parsed.literal(), profile.getAccountId(), keyPair.getPrivate());
     }
 
     private NexusIdentityManifest buildIdentityManifest(AccountRegistrationRequest request) {
@@ -267,13 +371,16 @@ public class IrohaRepository {
     }
 
     private void transferInternal(String receiverAccountId, String amount) throws Exception {
-        if (receiverAccountId == null || !receiverAccountId.contains("@")) {
-            throw new IllegalArgumentException("Receiver account must include domain, e.g., <address>@<domain>");
+        if (receiverAccountId == null || receiverAccountId.trim().isEmpty()) {
+            throw new IllegalArgumentException("Receiver account ID is required");
         }
         if (amount == null || amount.trim().isEmpty()) {
             throw new IllegalArgumentException("Amount must not be empty");
         }
         AccountProfile profile = getAccountProfile();
+        if (receiverAccountId.equalsIgnoreCase(profile.getAccountId())) {
+            throw new IllegalArgumentException(context.getString(R.string.error_message_cannot_send_to_myself));
+        }
         final String assetId = toriiConfig.defaultAssetId();
         final InstructionBox instruction = InstructionBox.of(
                 org.hyperledger.iroha.android.model.instructions.TransferAssetInstruction.builder()
@@ -294,11 +401,52 @@ public class IrohaRepository {
 
         final Signer signer = keyManager.signerForAlias(
                 profile.getKeyAlias(),
-                IrohaKeyManager.KeySecurityPreference.HARDWARE_PREFERRED);
+                IrohaKeyManager.KeySecurityPreference.SOFTWARE_ONLY);
 
         final TransactionBuilder builder = new TransactionBuilder(codecAdapter, keyManager);
         final SignedTransaction transaction = builder.encodeAndSign(payload, signer);
         toriiClient.submitTransaction(transaction);
+    }
+
+    private void executeSubscriptionAction(String subscriptionId, Action action) {
+        try {
+            AccountProfile profile = getAccountProfile();
+            String privateKey = deriveExposedPrivateKey(profile);
+            if (action == Action.PAUSE) {
+                subscriptionRepository.pauseSubscription(subscriptionId, profile.getAccountId(), privateKey);
+            } else if (action == Action.RESUME) {
+                subscriptionRepository.resumeSubscription(subscriptionId, profile.getAccountId(), privateKey);
+            } else if (action == Action.CANCEL) {
+                subscriptionRepository.cancelSubscription(subscriptionId, profile.getAccountId(), privateKey);
+            } else if (action == Action.KEEP) {
+                subscriptionRepository.keepSubscription(subscriptionId, profile.getAccountId(), privateKey);
+            } else if (action == Action.CHARGE_NOW) {
+                subscriptionRepository.chargeNowSubscription(subscriptionId, profile.getAccountId(), privateKey);
+            } else {
+                throw new IllegalStateException("Unknown subscription action");
+            }
+        } catch (Exception ex) {
+            throw new CompletionException(ex);
+        }
+    }
+
+    private String deriveExposedPrivateKey(AccountProfile profile) throws Exception {
+        try {
+            KeyPair keyPair = keyManager.generateOrLoad(
+                    profile.getKeyAlias(),
+                    IrohaKeyManager.KeySecurityPreference.SOFTWARE_ONLY);
+            return ExposedPrivateKeyEncoder.encodePrivateKey(keyPair.getPrivate());
+        } catch (Exception ex) {
+            throw new IllegalStateException("Key management error: failed to derive account private key");
+        }
+    }
+
+    private enum Action {
+        PAUSE,
+        RESUME,
+        CANCEL,
+        KEEP,
+        CHARGE_NOW
     }
 
     private static int generateNonce() {

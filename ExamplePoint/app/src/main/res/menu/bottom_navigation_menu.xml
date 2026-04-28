@@ -14,6 +14,18 @@
         android:title="@string/wallet"
         app:showAsAction="ifRoom" />
     <item
+        android:id="@+id/action_subscriptions"
+        android:enabled="true"
+        android:icon="@drawable/ic_home_white_24dp"
+        android:title="@string/subscriptions"
+        app:showAsAction="ifRoom" />
+    <item
+        android:id="@+id/action_offline"
+        android:enabled="true"
+        android:icon="@drawable/tab_offline"
+        android:title="@string/offline"
+        app:showAsAction="ifRoom" />
+    <item
         android:id="@+id/action_sender"
         android:enabled="true"
         android:icon="@drawable/tab_send"

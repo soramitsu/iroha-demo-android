@@ -22,9 +22,11 @@ import android.animation.AnimatorSet;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
+import android.graphics.Rect;
 import android.view.MotionEvent;
+import android.view.View;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.EditText;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -76,12 +78,20 @@ public class AccountRegisterActivity extends AppCompatActivity
 
     @Override
     public boolean dispatchTouchEvent(MotionEvent ev) {
-        Log.d(TAG, "dispatchTouchEvent: ");
-        inputMethodManager.hideSoftInputFromWindow(
-                binding.getRoot().getWindowToken(),
-                InputMethodManager.HIDE_NOT_ALWAYS
-        );
-        binding.getRoot().requestFocus();
+        if (ev.getAction() == MotionEvent.ACTION_DOWN) {
+            View focused = getCurrentFocus();
+            if (focused instanceof EditText) {
+                Rect bounds = new Rect();
+                focused.getGlobalVisibleRect(bounds);
+                if (!bounds.contains((int) ev.getRawX(), (int) ev.getRawY())) {
+                    focused.clearFocus();
+                    inputMethodManager.hideSoftInputFromWindow(
+                            focused.getWindowToken(),
+                            InputMethodManager.HIDE_NOT_ALWAYS
+                    );
+                }
+            }
+        }
         return super.dispatchTouchEvent(ev);
     }
 

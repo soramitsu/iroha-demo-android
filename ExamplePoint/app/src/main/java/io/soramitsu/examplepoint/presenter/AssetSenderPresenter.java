@@ -14,10 +14,9 @@ import java.util.concurrent.CompletableFuture;
 import io.soramitsu.examplepoint.R;
 import io.soramitsu.examplepoint.data.ToriiConfig;
 import io.soramitsu.examplepoint.exception.ErrorMessageFactory;
-import io.soramitsu.examplepoint.sdk.AccountAddressFormatter;
+import io.soramitsu.examplepoint.sdk.AccountLiteralFormatter;
 import io.soramitsu.examplepoint.sdk.IrohaRepository;
 import io.soramitsu.examplepoint.view.AssetSenderView;
-import org.hyperledger.iroha.android.address.AccountAddress.AccountAddressException;
 
 public class AssetSenderPresenter implements Presenter<AssetSenderView> {
 
@@ -96,8 +95,10 @@ public class AssetSenderPresenter implements Presenter<AssetSenderView> {
     }
 
     private void send() {
-        final String normalizedReceiver;
-        final String amount = assetSenderView.getAmount().trim();
+        final String receiverLiteral;
+        final String amount = assetSenderView.getAmount() == null
+                ? ""
+                : assetSenderView.getAmount().trim();
 
         if (amount.isEmpty()) {
             assetSenderView.showError(ErrorMessageFactory.create(
@@ -107,8 +108,8 @@ public class AssetSenderPresenter implements Presenter<AssetSenderView> {
         }
 
         try {
-            normalizedReceiver = normalizeReceiver(assetSenderView.getReceiver());
-        } catch (IllegalArgumentException | AccountAddressException e) {
+            receiverLiteral = normalizeReceiver(assetSenderView.getReceiver());
+        } catch (IllegalArgumentException e) {
             assetSenderView.showError(ErrorMessageFactory.create(assetSenderView.getContext(), e));
             return;
         }
@@ -120,16 +121,9 @@ public class AssetSenderPresenter implements Presenter<AssetSenderView> {
             return;
         }
 
-        if (normalizedReceiver.equalsIgnoreCase(repository.getAccountProfile().getAccountId())) {
-            assetSenderView.showError(
-                    ErrorMessageFactory.create(assetSenderView.getContext(), new IllegalArgumentException(
-                            assetSenderView.getContext().getString(R.string.error_message_cannot_send_to_myself))));
-            return;
-        }
-
         assetSenderView.showProgress();
-        CompletableFuture<Void> future = repository.transferAsset(normalizedReceiver, amount);
-        future.thenRun(() -> mainHandler.post(() -> onTransferSuccess(normalizedReceiver, amount)))
+        CompletableFuture<String> future = repository.transferAsset(receiverLiteral, amount);
+        future.thenAccept(resolvedReceiver -> mainHandler.post(() -> onTransferSuccess(resolvedReceiver, amount)))
                 .exceptionally(throwable -> {
                     Throwable cause = throwable.getCause() != null ? throwable.getCause() : throwable;
                     mainHandler.post(() -> handleError(cause));
@@ -147,17 +141,17 @@ public class AssetSenderPresenter implements Presenter<AssetSenderView> {
         try {
             String normalized = normalizeReceiver(payload);
             assetSenderView.setReceiver(normalized);
-        } catch (IllegalArgumentException | AccountAddressException e) {
+        } catch (IllegalArgumentException e) {
             assetSenderView.showError(ErrorMessageFactory.create(assetSenderView.getContext(), e));
         }
     }
 
-    private String normalizeReceiver(String raw) throws AccountAddressException {
+    private String normalizeReceiver(String raw) {
         if (raw == null || raw.trim().isEmpty()) {
             throw new IllegalArgumentException(assetSenderView.getContext()
                     .getString(R.string.error_message_receiver_required));
         }
-        return AccountAddressFormatter.normalizeAccountId(raw, toriiConfig);
+        return AccountLiteralFormatter.normalize(raw, toriiConfig).literal();
     }
 
     private void onTransferSuccess(String receiver, String amount) {

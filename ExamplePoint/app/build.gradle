@@ -29,7 +29,7 @@ def toriiDomain = project.findProperty("toriiDomain") ?: "wonderland"
 def toriiAssetId = project.findProperty("toriiDefaultAssetId") ?: "point#wonderland"
 def toriiAdminAccountId = project.findProperty("toriiAdminAccountId") ?: ""
 def toriiAdminPrivateKey = project.findProperty("toriiAdminPrivateKey") ?: ""
-def toriiIh58Prefix = (project.findProperty("toriiIh58Prefix") ?: "42") as String
+def toriiI105Discriminant = (project.findProperty("toriiI105Discriminant") ?: "753") as String
 
 android {
     namespace 'io.soramitsu.examplepoint'
@@ -48,7 +48,7 @@ android {
         buildConfigField "String", "TORII_DEFAULT_ASSET_ID", "\"${toriiAssetId}\""
         buildConfigField "String", "TORII_ADMIN_ACCOUNT_ID", "\"${toriiAdminAccountId}\""
         buildConfigField "String", "TORII_ADMIN_PRIVATE_KEY", "\"${toriiAdminPrivateKey}\""
-        buildConfigField "int", "TORII_IH58_PREFIX", toriiIh58Prefix
+        buildConfigField "int", "TORII_I105_DISCRIMINANT", toriiI105Discriminant
     }
 
     buildTypes {
@@ -109,4 +109,5 @@ dependencies {
 
     testImplementation "junit:junit:${versions.junit}"
     testImplementation "org.json:json:${versions.orgJson}"
+    testImplementation "com.squareup.okhttp3:mockwebserver:4.12.0"
 }

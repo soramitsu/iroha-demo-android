@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Handler;
 import android.os.Looper;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 
@@ -21,6 +22,8 @@ import io.soramitsu.examplepoint.sdk.backup.MnemonicGenerator;
 import io.soramitsu.examplepoint.view.KeySetupView;
 
 public class KeySetupPresenter implements Presenter<KeySetupView> {
+
+    private static final String TAG = KeySetupPresenter.class.getSimpleName();
 
     private KeySetupView keySetupView;
     private IrohaRepository irohaRepository;
@@ -136,6 +139,7 @@ public class KeySetupPresenter implements Presenter<KeySetupView> {
             return;
         }
         keySetupView.hideProgress();
+        Log.e(TAG, "Failed to generate key backup plan", throwable);
         String message = ErrorMessageFactory.create(keySetupView.getContext(), throwable);
         keySetupView.showError(message);
     }
@@ -153,6 +157,7 @@ public class KeySetupPresenter implements Presenter<KeySetupView> {
             return;
         }
         keySetupView.hideProgress();
+        Log.e(TAG, "Failed to persist key backup plan", throwable);
         String message = ErrorMessageFactory.create(keySetupView.getContext(), throwable);
         keySetupView.showError(message);
     }

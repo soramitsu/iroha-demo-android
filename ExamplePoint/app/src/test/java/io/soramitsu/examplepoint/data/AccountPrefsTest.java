@@ -6,6 +6,7 @@ import static org.junit.Assert.assertTrue;
 
 import android.content.SharedPreferences;
 
+import org.hyperledger.iroha.android.address.AccountAddress;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -15,7 +16,12 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
+import io.soramitsu.examplepoint.sdk.AccountIdCodec;
+import okhttp3.HttpUrl;
+
 public class AccountPrefsTest {
+
+    private static final int I105_DISCRIMINANT = 753;
 
     private InMemoryPreferences preferences;
     private AccountPrefs accountPrefs;
@@ -23,12 +29,12 @@ public class AccountPrefsTest {
     @Before
     public void setUp() {
         preferences = new InMemoryPreferences();
-        accountPrefs = new AccountPrefs(preferences);
+        accountPrefs = new AccountPrefs(preferences, config());
     }
 
     @Test
-    public void savePersistsActiveAccount() {
-        AccountProfile profile = profile("abc", "wonderland", "alias1", "Alice");
+    public void savePersistsActiveAccount() throws Exception {
+        AccountProfile profile = profile(accountId(0x01), "wonderland", "alias1", "Alice");
         accountPrefs.save(profile);
 
         Optional<AccountProfile> loaded = accountPrefs.load();
@@ -38,9 +44,9 @@ public class AccountPrefsTest {
     }
 
     @Test
-    public void setActiveAccountReordersProfileList() {
-        AccountProfile first = profile("aaa", "wonderland", "aliasA", "First");
-        AccountProfile second = profile("bbb", "wonderland", "aliasB", "Second");
+    public void setActiveAccountReordersProfileList() throws Exception {
+        AccountProfile first = profile(accountId(0x11), "wonderland", "aliasA", "First");
+        AccountProfile second = profile(accountId(0x21), "wonderland", "aliasB", "Second");
 
         accountPrefs.save(first);
         accountPrefs.save(second);
@@ -52,9 +58,9 @@ public class AccountPrefsTest {
     }
 
     @Test
-    public void removeActiveAccountFallsBackToNextProfile() {
-        AccountProfile first = profile("aaa", "wonderland", "aliasA", "First");
-        AccountProfile second = profile("bbb", "wonderland", "aliasB", "Second");
+    public void removeActiveAccountFallsBackToNextProfile() throws Exception {
+        AccountProfile first = profile(accountId(0x31), "wonderland", "aliasA", "First");
+        AccountProfile second = profile(accountId(0x41), "wonderland", "aliasB", "Second");
 
         accountPrefs.save(first);
         accountPrefs.save(second);
@@ -67,8 +73,8 @@ public class AccountPrefsTest {
     }
 
     @Test
-    public void removingLastAccountClearsActiveSelection() {
-        AccountProfile profile = profile("abc", "wonderland", "alias1", "Solo");
+    public void removingLastAccountClearsActiveSelection() throws Exception {
+        AccountProfile profile = profile(accountId(0x51), "wonderland", "alias1", "Solo");
         accountPrefs.save(profile);
 
         boolean removed = accountPrefs.removeAccount(profile.getAccountId());
@@ -77,8 +83,61 @@ public class AccountPrefsTest {
         assertTrue(accountPrefs.loadAll().isEmpty());
     }
 
+    @Test
+    public void loadMigratesLegacyCanonicalHexToDomainlessI105AccountId() throws Exception {
+        preferences.edit()
+                .putString("account_address", legacyCanonicalHex("wonderland"))
+                .putString("domain", "wonderland")
+                .putString("display_name", "Alice")
+                .putString("key_alias", "legacy-key")
+                .apply();
+
+        Optional<AccountProfile> loaded = accountPrefs.load();
+
+        assertTrue(loaded.isPresent());
+        assertEquals(expectedAccountId(), loaded.get().getAccountId());
+        assertFalse(preferences.contains("account_address"));
+        assertTrue(AccountIdCodec.isCanonicalAccountId(loaded.get().getAccountId(), I105_DISCRIMINANT));
+    }
+
     private static AccountProfile profile(String address, String domain, String alias, String displayName) {
         return new AccountProfile(address, domain, displayName, alias, null, null);
+    }
+
+    private static ToriiConfig config() {
+        return new ToriiConfig(
+                HttpUrl.get("https://torii.test"),
+                "chain",
+                "wonderland",
+                "asset#wonderland",
+                I105_DISCRIMINANT,
+                null,
+                null
+        );
+    }
+
+    private static String legacyCanonicalHex(String domain) throws Exception {
+        return AccountAddress.fromAccount(domain, publicKey(), "ed25519").canonicalHex();
+    }
+
+    private static String expectedAccountId() throws Exception {
+        return AccountIdCodec.encodeDomainlessAccount(publicKey(), "ed25519", I105_DISCRIMINANT);
+    }
+
+    private static String accountId(int startByte) throws Exception {
+        byte[] out = new byte[32];
+        for (int i = 0; i < out.length; i++) {
+            out[i] = (byte) (startByte + i);
+        }
+        return AccountIdCodec.encodeDomainlessAccount(out, "ed25519", I105_DISCRIMINANT);
+    }
+
+    private static byte[] publicKey() {
+        byte[] out = new byte[32];
+        for (int i = 0; i < out.length; i++) {
+            out[i] = (byte) (i + 1);
+        }
+        return out;
     }
 
     private static final class InMemoryPreferences implements SharedPreferences {

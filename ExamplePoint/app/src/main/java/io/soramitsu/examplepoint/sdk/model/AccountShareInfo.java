@@ -10,11 +10,6 @@ public final class AccountShareInfo {
 
     private final String displayName;
     private final String accountId;
-    private final String accountAddressHex;
-    private final String ih58Literal;
-    private final String compressedLiteral;
-    private final String compressedWarning;
-    private final int networkPrefix;
     private final String domain;
     @Nullable
     private final String preferredAssetId;
@@ -24,22 +19,12 @@ public final class AccountShareInfo {
     public AccountShareInfo(
             @NonNull String displayName,
             @NonNull String accountId,
-            @NonNull String accountAddressHex,
-            @NonNull String ih58Literal,
-            @NonNull String compressedLiteral,
-            @NonNull String compressedWarning,
-            int networkPrefix,
             @NonNull String domain,
             @Nullable String preferredAssetId,
             @Nullable String identityStatement
     ) {
         this.displayName = displayName;
         this.accountId = accountId;
-        this.accountAddressHex = accountAddressHex;
-        this.ih58Literal = ih58Literal;
-        this.compressedLiteral = compressedLiteral;
-        this.compressedWarning = compressedWarning;
-        this.networkPrefix = networkPrefix;
         this.domain = domain;
         this.preferredAssetId = preferredAssetId;
         this.identityStatement = identityStatement;
@@ -53,30 +38,6 @@ public final class AccountShareInfo {
     @NonNull
     public String getAccountId() {
         return accountId;
-    }
-
-    @NonNull
-    public String getAccountAddressHex() {
-        return accountAddressHex;
-    }
-
-    @NonNull
-    public String getIh58Literal() {
-        return ih58Literal;
-    }
-
-    @NonNull
-    public String getCompressedLiteral() {
-        return compressedLiteral;
-    }
-
-    @NonNull
-    public String getCompressedWarning() {
-        return compressedWarning;
-    }
-
-    public int getNetworkPrefix() {
-        return networkPrefix;
     }
 
     @NonNull

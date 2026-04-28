@@ -32,8 +32,7 @@ public class AssetReceiveFragment extends Fragment implements AssetReceiveView, 
 
     private FragmentAssetReceiveBinding binding;
     private AssetReceivePresenter presenter;
-    private String lastIh58;
-    private String lastCompressed;
+    private String lastAccountId;
     private String lastIdentityStatement;
 
     public static AssetReceiveFragment newInstance() {
@@ -59,8 +58,8 @@ public class AssetReceiveFragment extends Fragment implements AssetReceiveView, 
                 R.color.orange600
         );
         binding.swipeRefresh.setOnRefreshListener(presenter::onPullToRefresh);
-        binding.copyIh58.setOnClickListener(v -> copyToClipboard(lastIh58, getString(R.string.receive_clipboard_ih58)));
-        binding.copyCompressed.setOnClickListener(v -> copyToClipboard(lastCompressed, getString(R.string.receive_clipboard_compressed)));
+        binding.copyAccountId.setOnClickListener(v -> copyToClipboard(lastAccountId, getString(R.string.receive_clipboard_account_id)));
+        binding.copyAlias.setVisibility(View.GONE);
         binding.copyIas.setOnClickListener(v -> copyToClipboard(lastIdentityStatement, getString(R.string.receive_clipboard_ias)));
         return binding.getRoot();
     }
@@ -123,11 +122,10 @@ public class AssetReceiveFragment extends Fragment implements AssetReceiveView, 
             binding.accountIas.setText(info.getIdentityStatement());
             lastIdentityStatement = info.getIdentityStatement();
         }
-        binding.ih58Value.setText(String.format("%s@%s", info.getIh58Literal(), info.getDomain()));
-        binding.compressedValue.setText(String.format("%s@%s", info.getCompressedLiteral(), info.getDomain()));
-        binding.compressedWarning.setText(info.getCompressedWarning());
-        lastIh58 = binding.ih58Value.getText().toString();
-        lastCompressed = binding.compressedValue.getText().toString();
+        binding.accountIdValue.setText(info.getAccountId());
+        binding.aliasValue.setText(R.string.receive_alias_unavailable);
+        binding.aliasWarning.setText(R.string.receive_alias_warning);
+        lastAccountId = info.getAccountId();
     }
 
     @Override

@@ -96,7 +96,7 @@ public class AssetReceivePresenter implements Presenter<AssetReceiveView> {
         assetReceiveView.renderShareInfo(state.getShareInfo());
         assetReceiveView.renderAssets(state.getAssets());
         try {
-            Bitmap bitmap = QrCodeRenderer.render(state.getQrSnapshot().getLiteral(), 768);
+            Bitmap bitmap = QrCodeRenderer.render(state.getQrLiteral(), 768);
             assetReceiveView.showQr(bitmap);
         } catch (WriterException e) {
             assetReceiveView.showError(ErrorMessageFactory.create(assetReceiveView.getContext(), e));
