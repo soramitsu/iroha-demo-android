@@ -1,36 +1,47 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">#DB0622</color>
-    <color name="colorPrimaryDark">#DE2B3C</color>
-    <color name="colorAccent">#FF5252</color>
+    <color name="colorPrimary">#F45A8D</color>
+    <color name="colorPrimaryDark">#C2185B</color>
+    <color name="colorAccent">#FF8E53</color>
+    <color name="glass_background_start">#F9FCFF</color>
+    <color name="glass_background_end">#FFEAF5</color>
+    <color name="glass_highlight">#CCFFFFFF</color>
+    <color name="glass_surface">#D9FFFFFF</color>
+    <color name="glass_surface_alt">#B3FFFFFF</color>
+    <color name="glass_stroke">#80FFFFFF</color>
+    <color name="glass_accent">#FF9CD9</color>
+    <color name="sakura_outer_light">#FFD7EE</color>
+    <color name="sakura_inner_light">#FFB7D7</color>
+    <color name="sakura_outer_dark">#FFC8E4</color>
+    <color name="sakura_inner_dark">#FF9DC7</color>
 
     <!-- Text & Icon -->
-    <color name="text_icons">#B6B6B6</color>
+    <color name="text_icons">#757575</color>
     <color name="primary_text">#212121</color>
-    <color name="secondary_text">#727272</color>
-    <color name="divider_color">#B6B6B6</color>
-    <color name="link_color">#1111CC</color>
+    <color name="secondary_text">#4A4A4A</color>
+    <color name="divider_color">#FFE1F1</color>
+    <color name="link_color">#0072FF</color>
 
     <!-- Greyscales -->
-    <color name="grey200">#EEEEEE</color>
-    <color name="grey300">#E0E0E0</color>
-    <color name="grey400">#BDBDBD</color>
-    <color name="grey600">#757575</color>
+    <color name="grey200">#F5F6FB</color>
+    <color name="grey300">#E9EBF5</color>
+    <color name="grey400">#D7DAE8</color>
+    <color name="grey600">#8B8FA6</color>
     <color name="black">#212121</color>
-    <color name="white">#FAFAFA</color>
-    <color name="grey">#AAFFFFFF</color>
+    <color name="white">#FFFFFF</color>
+    <color name="grey">#66A5B5C4</color>
 
     <!-- Others -->
-    <color name="red600">#E53935</color>
-    <color name="pink600">#D81B60</color>
-    <color name="purple600">#8E24AA</color>
-    <color name="blue600">#1E88E5</color>
-    <color name="cyan600">#00ACC1</color>
-    <color name="green600">#43A047</color>
-    <color name="yellow600">#FDD835</color>
-    <color name="orange600">#FB8C00</color>
-    <color name="brown600">#6D4C41</color>
-    <color name="light_green600">#7CB342</color>
+    <color name="red600">#FF6F6F</color>
+    <color name="pink600">#FF8CCF</color>
+    <color name="purple600">#B388FF</color>
+    <color name="blue600">#7EB7FF</color>
+    <color name="cyan600">#4DD0E1</color>
+    <color name="green600">#66BB6A</color>
+    <color name="yellow600">#F9CE55</color>
+    <color name="orange600">#FFB74D</color>
+    <color name="brown600">#8D6E63</color>
+    <color name="light_green600">#9AD36B</color>
 
     <color name="receiver">#FDD835</color>
     <color name="sender">#5CB85C</color>

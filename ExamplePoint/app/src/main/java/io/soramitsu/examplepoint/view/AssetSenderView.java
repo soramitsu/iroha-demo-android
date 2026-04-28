@@ -32,9 +32,7 @@ public interface AssetSenderView extends LoadingView {
 
     String getReceiver();
 
-    void showQRReader();
+    void setReceiver(String receiver);
 
-    void beforeQRReadViewState();
-
-    void afterQRReadViewState(String receiver, String value);
+    void resetForm();
 }

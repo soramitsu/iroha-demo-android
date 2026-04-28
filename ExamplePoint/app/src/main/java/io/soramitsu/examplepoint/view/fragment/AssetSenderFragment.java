@@ -17,22 +17,25 @@ limitations under the License.
 
 package io.soramitsu.examplepoint.view.fragment;
 
+import android.app.Activity;
 import android.content.DialogInterface;
-import android.databinding.DataBindingUtil;
+import android.content.Intent;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
-import android.support.v4.app.Fragment;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
+
 import io.soramitsu.examplepoint.R;
 import io.soramitsu.examplepoint.databinding.FragmentAssetSenderBinding;
-import io.soramitsu.examplepoint.navigator.Navigator;
 import io.soramitsu.examplepoint.presenter.AssetSenderPresenter;
 import io.soramitsu.examplepoint.view.AssetSenderView;
 import io.soramitsu.examplepoint.view.activity.MainActivity;
+import io.soramitsu.examplepoint.view.activity.QrScannerActivity;
 import io.soramitsu.examplepoint.view.dialog.ErrorDialog;
 import io.soramitsu.examplepoint.view.dialog.ProgressDialog;
 import io.soramitsu.examplepoint.view.dialog.SuccessDialog;
@@ -41,9 +44,10 @@ public class AssetSenderFragment extends Fragment
         implements AssetSenderView, MainActivity.MainActivityListener {
     public static final String TAG = AssetSenderFragment.class.getSimpleName();
 
-    private AssetSenderPresenter assetSenderPresenter = new AssetSenderPresenter();
+    private AssetSenderPresenter assetSenderPresenter;
 
     private FragmentAssetSenderBinding binding;
+    private ActivityResultLauncher<Intent> qrScannerLauncher;
     private ErrorDialog errorDialog;
     private SuccessDialog successDialog;
     private ProgressDialog progressDialog;
@@ -56,8 +60,24 @@ public class AssetSenderFragment extends Fragment
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        assetSenderPresenter = new AssetSenderPresenter(requireContext());
         assetSenderPresenter.setView(this);
         assetSenderPresenter.onCreate();
+        qrScannerLauncher = registerForActivityResult(
+                new ActivityResultContracts.StartActivityForResult(),
+                result -> {
+                    if (result.getResultCode() != Activity.RESULT_OK) {
+                        return;
+                    }
+                    Intent data = result.getData();
+                    if (data == null) {
+                        assetSenderPresenter.onQrScanned(null);
+                        return;
+                    }
+                    String payload = data.getStringExtra(QrScannerActivity.EXTRA_QR_TEXT);
+                    assetSenderPresenter.onQrScanned(payload);
+                }
+        );
     }
 
     @Override
@@ -66,31 +86,22 @@ public class AssetSenderFragment extends Fragment
         errorDialog = new ErrorDialog(inflater);
         successDialog = new SuccessDialog(inflater);
         progressDialog = new ProgressDialog(inflater);
-        return inflater.inflate(R.layout.fragment_asset_sender, container, false);
+        binding = FragmentAssetSenderBinding.inflate(inflater, container, false);
+        return binding.getRoot();
     }
 
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        binding = DataBindingUtil.bind(view);
-        binding.qrButton.setOnClickListener(assetSenderPresenter.onQRShowClicked());
         binding.submitButton.setOnClickListener(assetSenderPresenter.onSubmitClicked());
         binding.amount.addTextChangedListener(assetSenderPresenter.textWatcher());
+        binding.qrButton.setOnClickListener(v -> launchQrScanner());
     }
 
     @Override
     public void onStart() {
         super.onStart();
         assetSenderPresenter.onStart();
-        if (binding.receiver.getText().length() != 0) {
-            Log.d(TAG, "onStart: " + binding.receiver.getText().toString());
-            afterQRReadViewState(
-                    binding.receiver.getText().toString(),
-                    binding.amount.getText().toString()
-            );
-        } else {
-            beforeQRReadViewState();
-        }
     }
 
     @Override
@@ -131,25 +142,19 @@ public class AssetSenderFragment extends Fragment
 
     @Override
     public String getReceiver() {
-        Log.d(TAG, "getReceiver: " + binding.receiver.getText().toString());
         return binding.receiver.getText().toString();
     }
 
     @Override
-    public void showQRReader() {
-        Navigator.getInstance().navigateToQRReaderActivity(getContext(), assetSenderPresenter.onReadQR());
+    public void setReceiver(String receiver) {
+        binding.receiver.setText(receiver);
+        binding.receiver.setSelection(receiver.length());
     }
 
     @Override
-    public void beforeQRReadViewState() {
+    public void resetForm() {
         binding.receiver.setText("");
         binding.amount.setText("");
-    }
-
-    @Override
-    public void afterQRReadViewState(String receiver, String value) {
-        binding.receiver.setText(receiver);
-        binding.amount.setText(value);
     }
 
     @Override
@@ -165,5 +170,10 @@ public class AssetSenderFragment extends Fragment
     @Override
     public void onNavigationItemClicked() {
         // nothing
+    }
+
+    private void launchQrScanner() {
+        Intent intent = new Intent(requireContext(), QrScannerActivity.class);
+        qrScannerLauncher.launch(intent);
     }
 }

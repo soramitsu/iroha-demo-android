@@ -28,13 +28,13 @@
                     android:layout_alignParentEnd="true"
                     android:src="@drawable/icon_qr" />
 
-                <android.support.design.widget.TextInputLayout
+                <com.google.android.material.textfield.TextInputLayout
                     android:id="@+id/account_num_container"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="16dp"
                     android:layout_toStartOf="@id/qr_button"
-                    android:hint="@string/to"
+                    android:hint="@string/send_receiver_hint"
                     android:textColorHint="@color/colorPrimary">
 
                     <EditText
@@ -42,14 +42,15 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:ellipsize="end"
-                        android:focusable="false"
-                        android:inputType="none"
+                        android:focusable="true"
+                        android:focusableInTouchMode="true"
+                        android:inputType="textNoSuggestions|textVisiblePassword"
                         android:maxLines="1" />
-                </android.support.design.widget.TextInputLayout>
+                </com.google.android.material.textfield.TextInputLayout>
 
             </RelativeLayout>
 
-            <android.support.design.widget.TextInputLayout
+            <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/remittance_amount_container"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -64,7 +65,7 @@
                     android:ellipsize="end"
                     android:inputType="number"
                     android:maxLines="1" />
-            </android.support.design.widget.TextInputLayout>
+            </com.google.android.material.textfield.TextInputLayout>
 
         </LinearLayout>
 

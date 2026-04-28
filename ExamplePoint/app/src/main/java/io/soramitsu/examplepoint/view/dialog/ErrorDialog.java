@@ -20,10 +20,11 @@ package io.soramitsu.examplepoint.view.dialog;
 import android.app.Activity;
 import android.app.Dialog;
 import android.content.DialogInterface;
-import android.support.v7.app.AlertDialog;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+
+import androidx.appcompat.app.AlertDialog;
 
 import io.soramitsu.examplepoint.R;
 import io.soramitsu.examplepoint.databinding.DialogBinding;

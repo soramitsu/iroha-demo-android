@@ -19,12 +19,8 @@ package io.soramitsu.examplepoint.navigator;
 
 import android.content.Context;
 import android.content.Intent;
-import android.support.annotation.NonNull;
-
 import io.soramitsu.examplepoint.view.activity.AccountRegisterActivity;
 import io.soramitsu.examplepoint.view.activity.MainActivity;
-import io.soramitsu.irohaandroid.callback.Callback;
-import io.soramitsu.irohaandroid.qr.QRReaderBuilder;
 
 public class Navigator {
     private static Navigator navigator;
@@ -45,18 +41,9 @@ public class Navigator {
         }
     }
 
-    public void navigateToMainActivity(Context context, String uuid) {
+    public void navigateToMainActivity(Context context) {
         if (context != null) {
-            context.startActivity(MainActivity.getCallingIntent(context, uuid));
-        }
-    }
-
-    public void navigateToQRReaderActivity(Context context, @NonNull Callback<String> callback) {
-        if (context != null) {
-            Intent intent = new QRReaderBuilder(context)
-                    .setCallback(callback)
-                    .build();
-            context.startActivity(intent);
+            context.startActivity(MainActivity.getCallingIntent(context));
         }
     }
 }

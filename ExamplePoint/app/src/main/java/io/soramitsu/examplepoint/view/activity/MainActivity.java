@@ -20,19 +20,8 @@ package io.soramitsu.examplepoint.view.activity;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.databinding.DataBindingUtil;
 import android.graphics.Rect;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.design.widget.BottomNavigationView;
-import android.support.design.widget.NavigationView;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentTransaction;
-import android.support.v4.content.ContextCompat;
-import android.support.v4.view.GravityCompat;
-import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -44,46 +33,57 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
+import androidx.core.view.GravityCompat;
+import androidx.databinding.DataBindingUtil;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
+
+import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.android.material.navigation.NavigationView;
+
 import com.mikepenz.aboutlibraries.LibsBuilder;
 import com.mikepenz.aboutlibraries.ui.LibsSupportFragment;
 
-import java.io.IOException;
-import java.security.InvalidKeyException;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.UnrecoverableKeyException;
-
-import javax.crypto.NoSuchPaddingException;
+import java.util.List;
 
 import io.soramitsu.examplepoint.R;
 import io.soramitsu.examplepoint.databinding.ActivityMainBinding;
+import io.soramitsu.examplepoint.data.AccountProfile;
 import io.soramitsu.examplepoint.exception.ErrorMessageFactory;
 import io.soramitsu.examplepoint.navigator.Navigator;
+import io.soramitsu.examplepoint.sdk.IrohaRepository;
 import io.soramitsu.examplepoint.view.fragment.AssetReceiveFragment;
 import io.soramitsu.examplepoint.view.fragment.AssetSenderFragment;
+import io.soramitsu.examplepoint.view.fragment.OfflineFragment;
+import io.soramitsu.examplepoint.view.fragment.SubscriptionHubFragment;
 import io.soramitsu.examplepoint.view.fragment.WalletFragment;
-import io.soramitsu.irohaandroid.model.Account;
-import io.soramitsu.irohaandroid.model.KeyPair;
 
 public class MainActivity extends AppCompatActivity {
     public static final String TAG = MainActivity.class.getSimpleName();
 
-    private static final String BUNDLE_MAIN_ACTIVITY_KEY_UUID = "UUID";
     private static final int NAVIGATION_ITEM_RECEIVE = 0;
     private static final int NAVIGATION_ITEM_WALLET = 1;
-    private static final int NAVIGATION_ITEM_SEND = 2;
+    private static final int NAVIGATION_ITEM_SUBSCRIPTIONS = 2;
+    private static final int NAVIGATION_ITEM_OFFLINE = 3;
+    private static final int NAVIGATION_ITEM_SEND = 4;
 
     private Navigator navigator = Navigator.getInstance();
+    private IrohaRepository irohaRepository;
 
     private ActivityMainBinding binding;
     private InputMethodManager inputMethodManager;
 
     private WalletFragment walletFragment;
+    private SubscriptionHubFragment subscriptionHubFragment;
     private AssetSenderFragment assetSenderFragment;
     private AssetReceiveFragment assetReceiveFragment;
+    private OfflineFragment offlineFragment;
     private LibsSupportFragment libsFragment;
-
-    private String uuid;
 
     public interface MainActivityListener {
         void onNavigationItemClicked();
@@ -93,9 +93,8 @@ public class MainActivity extends AppCompatActivity {
         void onVisibilityChanged(boolean isVisible);
     }
 
-    public static Intent getCallingIntent(Context context, String uuid) {
+    public static Intent getCallingIntent(Context context) {
         Intent intent = new Intent(context, MainActivity.class);
-        intent.putExtra(BUNDLE_MAIN_ACTIVITY_KEY_UUID, uuid);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         return intent;
     }
@@ -103,11 +102,8 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        final Intent intent = getIntent();
-        uuid = intent.getStringExtra(BUNDLE_MAIN_ACTIVITY_KEY_UUID);
-
-        if ((uuid == null || uuid.isEmpty())) {
+        irohaRepository = new IrohaRepository(getApplicationContext());
+        if (!irohaRepository.hasAccountProfile()) {
             navigator.navigateToRegisterActivity(getApplicationContext());
             finish();
             return;
@@ -156,22 +152,16 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void initNavigationHeader() {
-        final Context context = getApplicationContext();
-        final String alias;
-        final String uuid;
-        try {
-            alias = Account.getAlias(context);
-            uuid = Account.getUuid(context);
-        } catch (NoSuchPaddingException | UnrecoverableKeyException | NoSuchAlgorithmException
-                | KeyStoreException | InvalidKeyException | IOException e) {
-            Toast.makeText(context, ErrorMessageFactory.create(context, e), Toast.LENGTH_SHORT).show();
-            return;
-        }
-
         View headerView = binding.navigation.getHeaderView(0);
-        ((TextView) headerView.findViewById(R.id.name)).setText(alias);
-        ((TextView) headerView.findViewById(R.id.email)).setText(uuid);
-        Log.d(TAG, "initNavigationHeader: " + uuid);
+        headerView.setOnClickListener(v -> showAccountSwitcherDialog());
+        try {
+            AccountProfile profile = irohaRepository.getAccountProfile();
+            ((TextView) headerView.findViewById(R.id.name)).setText(profile.getDisplayName());
+            ((TextView) headerView.findViewById(R.id.email)).setText(profile.getAccountId());
+        } catch (Exception e) {
+            Context context = getApplicationContext();
+            Toast.makeText(context, ErrorMessageFactory.create(context, e), Toast.LENGTH_SHORT).show();
+        }
     }
 
     private void initNavigationView() {
@@ -181,9 +171,9 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
                         boolean isChecked = item.isChecked();
-                        switch (item.getItemId()) {
-                            case R.id.action_receipt:
-                                if (isChecked) break;
+                        int itemId = item.getItemId();
+                        if (itemId == R.id.action_receipt) {
+                            if (!isChecked) {
                                 Log.d(TAG, "onNavigationItemSelected: Receiver");
                                 transitionTo(
                                         assetReceiveFragment,
@@ -191,9 +181,9 @@ public class MainActivity extends AppCompatActivity {
                                         R.string.receive,
                                         NAVIGATION_ITEM_RECEIVE
                                 );
-                                break;
-                            case R.id.action_wallet:
-                                if (isChecked) break;
+                            }
+                        } else if (itemId == R.id.action_wallet) {
+                            if (!isChecked) {
                                 Log.d(TAG, "onNavigationItemSelected: Wallet");
                                 transitionTo(
                                         walletFragment,
@@ -201,9 +191,29 @@ public class MainActivity extends AppCompatActivity {
                                         R.string.wallet,
                                         NAVIGATION_ITEM_WALLET
                                 );
-                                break;
-                            case R.id.action_sender:
-                                if (isChecked) break;
+                            }
+                        } else if (itemId == R.id.action_subscriptions) {
+                            if (!isChecked) {
+                                Log.d(TAG, "onNavigationItemSelected: Subscriptions");
+                                transitionTo(
+                                        subscriptionHubFragment,
+                                        SubscriptionHubFragment.TAG,
+                                        R.string.subscriptions,
+                                        NAVIGATION_ITEM_SUBSCRIPTIONS
+                                );
+                            }
+                        } else if (itemId == R.id.action_offline) {
+                            if (!isChecked) {
+                                Log.d(TAG, "onNavigationItemSelected: Offline");
+                                transitionTo(
+                                        offlineFragment,
+                                        OfflineFragment.TAG,
+                                        R.string.offline,
+                                        NAVIGATION_ITEM_OFFLINE
+                                );
+                            }
+                        } else if (itemId == R.id.action_sender) {
+                            if (!isChecked) {
                                 Log.d(TAG, "onNavigationItemSelected: Sender");
                                 transitionTo(
                                         assetSenderFragment,
@@ -211,38 +221,49 @@ public class MainActivity extends AppCompatActivity {
                                         R.string.send,
                                         NAVIGATION_ITEM_SEND
                                 );
-                                break;
-                            case R.id.action_unregister:
-                                new AlertDialog.Builder(MainActivity.this)
-                                        .setMessage("Are you sure you want to delete your account info?")
-                                        .setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
-                                            @Override
-                                            public void onClick(DialogInterface dialogInterface, int i) {
-                                                dialogInterface.dismiss();
-                                            }
-                                        })
-                                        .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
-                                            @Override
-                                            public void onClick(DialogInterface dialogInterface, int i) {
-                                                dialogInterface.dismiss();
-                                                Context c = getApplicationContext();
-                                                KeyPair.delete(c);
-                                                Account.delete(c);
-                                                navigator.navigateToRegisterActivity(c);
-                                                finish();
-                                            }
-                                        })
-                                        .setCancelable(true)
-                                        .create().show();
-                                break;
-                            case R.id.action_oss:
-                                if (isChecked) break;
+                            }
+                        } else if (itemId == R.id.action_switch_account) {
+                            showAccountSwitcherDialog();
+                        } else if (itemId == R.id.action_add_account) {
+                            navigator.navigateToRegisterActivity(getApplicationContext());
+                        } else if (itemId == R.id.action_unregister) {
+                            final AccountProfile profile = irohaRepository.hasAccountProfile()
+                                    ? irohaRepository.getAccountProfile()
+                                    : null;
+                            new AlertDialog.Builder(MainActivity.this)
+                                    .setMessage(profile != null
+                                            ? getString(R.string.remove_account_confirmation, profile.getAccountId())
+                                            : getString(R.string.unregister_confirmation))
+                                    .setNegativeButton(android.R.string.cancel, (dialogInterface, i) -> dialogInterface.dismiss())
+                                    .setPositiveButton(android.R.string.ok, (dialogInterface, i) -> {
+                                        dialogInterface.dismiss();
+                                        if (profile != null) {
+                                            irohaRepository.removeAccount(profile.getAccountId());
+                                        } else {
+                                            irohaRepository.clearAccountProfile();
+                                        }
+                                        Context c = getApplicationContext();
+                                        if (irohaRepository.hasAccountProfile()) {
+                                            navigator.navigateToMainActivity(c);
+                                        } else {
+                                            navigator.navigateToRegisterActivity(c);
+                                        }
+                                        finish();
+                                    })
+                                    .setCancelable(true)
+                                    .create().show();
+                        } else if (itemId == R.id.action_oss) {
+                            if (!isChecked) {
                                 binding.bottomNavigation.setVisibility(View.GONE);
                                 binding.toolbar.setTitle(getString(R.string.open_source_license));
                                 switchFragment(libsFragment, "libs");
                                 allClearNavigationMenuChecked();
-                                binding.navigation.getMenu().getItem(4).setChecked(true);
-                                break;
+                                Menu menu = binding.navigation.getMenu();
+                                MenuItem ossItem = menu.findItem(R.id.action_oss);
+                                if (ossItem != null) {
+                                    ossItem.setChecked(true);
+                                }
+                            }
                         }
                         binding.drawerLayout.closeDrawer(GravityCompat.START);
                         return true;
@@ -257,35 +278,48 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
                         if (!item.isChecked()) {
-                            switch (item.getItemId()) {
-                                case R.id.action_receipt:
-                                    Log.d(TAG, "onNavigationItemSelected: Receiver");
-                                    binding.toolbar.setTitle(getString(R.string.receive));
-                                    transitionTo(
-                                            assetReceiveFragment,
-                                            AssetReceiveFragment.TAG,
-                                            R.string.receive,
-                                            NAVIGATION_ITEM_RECEIVE
-                                    );
-                                    break;
-                                case R.id.action_wallet:
-                                    Log.d(TAG, "onNavigationItemSelected: Wallet");
-                                    transitionTo(
-                                            walletFragment,
-                                            WalletFragment.TAG,
-                                            R.string.wallet,
-                                            NAVIGATION_ITEM_WALLET
-                                    );
-                                    break;
-                                case R.id.action_sender:
-                                    Log.d(TAG, "onNavigationItemSelected: Sender");
-                                    transitionTo(
-                                            assetSenderFragment,
-                                            AssetSenderFragment.TAG,
-                                            R.string.send,
-                                            NAVIGATION_ITEM_SEND
-                                    );
-                                    break;
+                            int itemId = item.getItemId();
+                            if (itemId == R.id.action_receipt) {
+                                Log.d(TAG, "onNavigationItemSelected: Receiver");
+                                binding.toolbar.setTitle(getString(R.string.receive));
+                                transitionTo(
+                                        assetReceiveFragment,
+                                        AssetReceiveFragment.TAG,
+                                        R.string.receive,
+                                        NAVIGATION_ITEM_RECEIVE
+                                );
+                            } else if (itemId == R.id.action_wallet) {
+                                Log.d(TAG, "onNavigationItemSelected: Wallet");
+                                transitionTo(
+                                        walletFragment,
+                                        WalletFragment.TAG,
+                                        R.string.wallet,
+                                        NAVIGATION_ITEM_WALLET
+                                );
+                            } else if (itemId == R.id.action_subscriptions) {
+                                Log.d(TAG, "onNavigationItemSelected: Subscriptions");
+                                transitionTo(
+                                        subscriptionHubFragment,
+                                        SubscriptionHubFragment.TAG,
+                                        R.string.subscriptions,
+                                        NAVIGATION_ITEM_SUBSCRIPTIONS
+                                );
+                            } else if (itemId == R.id.action_offline) {
+                                Log.d(TAG, "onNavigationItemSelected: Offline");
+                                transitionTo(
+                                        offlineFragment,
+                                        OfflineFragment.TAG,
+                                        R.string.offline,
+                                        NAVIGATION_ITEM_OFFLINE
+                                );
+                            } else if (itemId == R.id.action_sender) {
+                                Log.d(TAG, "onNavigationItemSelected: Sender");
+                                transitionTo(
+                                        assetSenderFragment,
+                                        AssetSenderFragment.TAG,
+                                        R.string.send,
+                                        NAVIGATION_ITEM_SEND
+                                );
                             }
                         } else {
                             Log.d(TAG, "onNavigationItemSelected: Topへ!");
@@ -316,13 +350,21 @@ public class MainActivity extends AppCompatActivity {
         final FragmentManager manager = getSupportFragmentManager();
         assetReceiveFragment = (AssetReceiveFragment) manager.findFragmentByTag(AssetReceiveFragment.TAG);
         walletFragment = (WalletFragment) manager.findFragmentByTag(WalletFragment.TAG);
+        subscriptionHubFragment = (SubscriptionHubFragment) manager.findFragmentByTag(SubscriptionHubFragment.TAG);
         assetSenderFragment = (AssetSenderFragment) manager.findFragmentByTag(AssetSenderFragment.TAG);
+        offlineFragment = (OfflineFragment) manager.findFragmentByTag(OfflineFragment.TAG);
 
         if (assetReceiveFragment == null) {
-            assetReceiveFragment = AssetReceiveFragment.newInstance(uuid);
+            assetReceiveFragment = AssetReceiveFragment.newInstance();
         }
         if (walletFragment == null) {
-            walletFragment = WalletFragment.newInstance(uuid);
+            walletFragment = WalletFragment.newInstance();
+        }
+        if (subscriptionHubFragment == null) {
+            subscriptionHubFragment = SubscriptionHubFragment.newInstance();
+        }
+        if (offlineFragment == null) {
+            offlineFragment = OfflineFragment.newInstance();
         }
         if (assetSenderFragment == null) {
             assetSenderFragment = AssetSenderFragment.newInstance();
@@ -370,6 +412,48 @@ public class MainActivity extends AppCompatActivity {
         allClearBottomNavigationMenuChecked();
         binding.navigation.getMenu().getItem(nav).setChecked(true);
         binding.bottomNavigation.getMenu().getItem(nav).setChecked(true);
+    }
+
+    private void showAccountSwitcherDialog() {
+        List<AccountProfile> profiles = irohaRepository.getAccountProfiles();
+        if (profiles.isEmpty()) {
+            Toast.makeText(getApplicationContext(), R.string.switch_account_unavailable, Toast.LENGTH_SHORT).show();
+            return;
+        }
+        AccountProfile active = irohaRepository.hasAccountProfile() ? irohaRepository.getAccountProfile() : null;
+        int selectedIndex = -1;
+        String[] labels = new String[profiles.size()];
+        for (int i = 0; i < profiles.size(); i++) {
+            AccountProfile profile = profiles.get(i);
+            labels[i] = getString(R.string.switch_account_item, profile.getDisplayName(), profile.getAccountId());
+            if (active != null && profile.getAccountId().equals(active.getAccountId())) {
+                selectedIndex = i;
+            }
+        }
+        if (selectedIndex < 0) {
+            selectedIndex = 0;
+        }
+        final int[] chosenIndex = new int[]{selectedIndex};
+        new AlertDialog.Builder(this)
+                .setTitle(R.string.switch_account)
+                .setSingleChoiceItems(labels, selectedIndex, (dialog, which) -> chosenIndex[0] = which)
+                .setNegativeButton(android.R.string.cancel, null)
+                .setNeutralButton(R.string.add_account, (dialog, which) -> {
+                    navigator.navigateToRegisterActivity(getApplicationContext());
+                })
+                .setPositiveButton(R.string.switch_account, (dialog, which) -> {
+                    if (chosenIndex[0] < 0 || chosenIndex[0] >= profiles.size()) {
+                        return;
+                    }
+                    String accountId = profiles.get(chosenIndex[0]).getAccountId();
+                    if (irohaRepository.setActiveAccount(accountId)) {
+                        navigator.navigateToMainActivity(getApplicationContext());
+                        finish();
+                    } else {
+                        Toast.makeText(getApplicationContext(), R.string.switch_account_failed, Toast.LENGTH_SHORT).show();
+                    }
+                })
+                .show();
     }
 
     private void setKeyboardListener(final OnKeyboardVisibilityListener listener) {

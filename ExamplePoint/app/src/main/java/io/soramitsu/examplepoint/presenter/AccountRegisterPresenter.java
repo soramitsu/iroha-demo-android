@@ -18,43 +18,43 @@ limitations under the License.
 package io.soramitsu.examplepoint.presenter;
 
 import android.content.Context;
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 
-import com.crashlytics.android.Crashlytics;
-
-import java.io.IOException;
-import java.security.InvalidKeyException;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-
-import javax.crypto.NoSuchPaddingException;
+import java.util.Locale;
+import java.util.concurrent.CompletableFuture;
 
 import io.soramitsu.examplepoint.R;
+import io.soramitsu.examplepoint.data.AccountProfile;
 import io.soramitsu.examplepoint.exception.ErrorMessageFactory;
-import io.soramitsu.examplepoint.exception.NetworkNotConnectedException;
 import io.soramitsu.examplepoint.exception.RequiredArgumentException;
-import io.soramitsu.examplepoint.util.NetworkUtil;
+import io.soramitsu.examplepoint.sdk.IrohaRepository;
+import io.soramitsu.examplepoint.sdk.registration.AccountRegistrationRequest;
+import io.soramitsu.examplepoint.util.CrashReporter;
 import io.soramitsu.examplepoint.view.AccountRegisterView;
-import io.soramitsu.irohaandroid.Iroha;
-import io.soramitsu.irohaandroid.callback.Callback;
-import io.soramitsu.irohaandroid.model.Account;
-import io.soramitsu.irohaandroid.model.KeyPair;
-import io.soramitsu.irohaandroid.security.KeyGenerator;
+import io.soramitsu.examplepoint.view.AccountRegisterView.RegistrationField;
 
 public class AccountRegisterPresenter implements Presenter<AccountRegisterView> {
     public static final String TAG = AccountRegisterPresenter.class.getSimpleName();
 
-    private static final String IROHA_TASK_TAG_ACCOUNT_REGISTER = "AccountRegister";
-
     private AccountRegisterView accountRegisterView;
+    private IrohaRepository irohaRepository;
+    private final Handler mainHandler = new Handler(Looper.getMainLooper());
+    @Nullable
+    private String preparedKeyAlias;
 
     @Override
     public void setView(@NonNull AccountRegisterView view) {
         accountRegisterView = view;
+        if (irohaRepository == null) {
+            irohaRepository = new IrohaRepository(view.getContext());
+        }
     }
 
     @Override
@@ -79,13 +79,16 @@ public class AccountRegisterPresenter implements Presenter<AccountRegisterView> 
 
     @Override
     public void onStop() {
-        Iroha.getInstance().cancelAsyncTask(IROHA_TASK_TAG_ACCOUNT_REGISTER);
-        accountRegisterView.hideProgress();
+        // nothing
     }
 
     @Override
     public void onDestroy() {
         // nothing
+    }
+
+    public void setPreparedKeyAlias(@Nullable String keyAlias) {
+        this.preparedKeyAlias = keyAlias;
     }
 
     public View.OnKeyListener onKeyEventOnUserName() {
@@ -108,83 +111,114 @@ public class AccountRegisterPresenter implements Presenter<AccountRegisterView> 
             @Override
             public void onClick(View view) {
                 final Context context = accountRegisterView.getContext();
-                final String alias = accountRegisterView.getAlias();
-
-                if (alias.isEmpty()) {
-                    accountRegisterView.showError(
-                            ErrorMessageFactory.create(context, new RequiredArgumentException(), context.getString(R.string.name))
-                    );
+                accountRegisterView.clearFieldErrors();
+                final AccountRegistrationRequest request = buildRequest();
+                if (request == null) {
                     return;
                 }
-
                 accountRegisterView.showProgress();
-
-                KeyPair keyPair = KeyGenerator.createKeyPair();
-                try {
-                    keyPair.save(context);
-                } catch (InvalidKeyException | NoSuchAlgorithmException | KeyStoreException
-                        | NoSuchPaddingException | IOException e) {
-                    Log.e(TAG, "onClick: ", e);
-                    Crashlytics.log(Log.ERROR, AccountRegisterPresenter.TAG, e.getMessage());
-                }
-                register(keyPair, alias);
+                register(request);
             }
         };
     }
 
-    private void register(final KeyPair keyPair, final String alias) {
-        Log.d(TAG, "register: " + keyPair.publicKey);
-        Iroha iroha = Iroha.getInstance();
-        iroha.runAsyncTask(
-                IROHA_TASK_TAG_ACCOUNT_REGISTER,
-                iroha.registerAccountFunction(keyPair.publicKey, alias),
-                callback()
+    private AccountRegistrationRequest buildRequest() {
+        final Context context = accountRegisterView.getContext();
+        boolean invalid = false;
+
+        final String displayName = accountRegisterView.getDisplayName().trim();
+        if (displayName.isEmpty()) {
+            accountRegisterView.showFieldError(
+                    RegistrationField.DISPLAY_NAME,
+                    ErrorMessageFactory.create(context, new RequiredArgumentException(), context.getString(R.string.name)));
+            invalid = true;
+        }
+
+        final String legalName = accountRegisterView.getLegalName().trim();
+        if (legalName.isEmpty()) {
+            accountRegisterView.showFieldError(
+                    RegistrationField.LEGAL_NAME,
+                    context.getString(R.string.registration_legal_name_required));
+            invalid = true;
+        }
+
+        final String documentType = accountRegisterView.getDocumentType().trim().toUpperCase(Locale.US);
+        if (documentType.isEmpty()) {
+            accountRegisterView.showFieldError(
+                    RegistrationField.DOCUMENT_TYPE,
+                    context.getString(R.string.registration_document_type_required));
+            invalid = true;
+        }
+
+        final String documentNumber = accountRegisterView.getDocumentNumber().trim();
+        if (documentNumber.isEmpty()) {
+            accountRegisterView.showFieldError(
+                    RegistrationField.DOCUMENT_NUMBER,
+                    context.getString(R.string.registration_document_number_required));
+            invalid = true;
+        }
+
+        final String residency = accountRegisterView.getResidencyCountry().trim().toUpperCase(Locale.US);
+        if (residency.isEmpty()) {
+            accountRegisterView.showFieldError(
+                    RegistrationField.RESIDENCY,
+                    context.getString(R.string.registration_residency_required));
+            invalid = true;
+        }
+
+        final String contact = accountRegisterView.getContactInfo().trim();
+        if (contact.isEmpty()) {
+            accountRegisterView.showFieldError(
+                    RegistrationField.CONTACT,
+                    context.getString(R.string.registration_contact_required));
+            invalid = true;
+        }
+
+        if (invalid) {
+            return null;
+        }
+
+        if (preparedKeyAlias == null || preparedKeyAlias.trim().isEmpty()) {
+            accountRegisterView.showError(context.getString(R.string.error_message_retry_again));
+            return null;
+        }
+
+        return new AccountRegistrationRequest(
+                displayName,
+                legalName,
+                documentType,
+                documentNumber,
+                residency,
+                contact,
+                preparedKeyAlias
         );
     }
 
-    private Callback<Account> callback() {
-        return new Callback<Account>() {
-            @Override
-            public void onSuccessful(Account result) {
-                registerSuccessful(result);
-            }
-
-            @Override
-            public void onFailure(Throwable throwable) {
-                registerFailure(throwable);
-            }
-        };
-    }
-
-    private void registerSuccessful(Account result) {
-        accountRegisterView.hideProgress();
-
-        try {
-            result.alias = accountRegisterView.getAlias();
-            result.save(accountRegisterView.getContext());
-        } catch (InvalidKeyException | NoSuchAlgorithmException
-                | KeyStoreException | NoSuchPaddingException | IOException e) {
-            Log.e(TAG, "onSuccessful: ", e);
-            Crashlytics.log(Log.ERROR, AccountRegisterPresenter.TAG, e.getMessage());
-            KeyPair.delete(accountRegisterView.getContext());
-            accountRegisterView.showError(ErrorMessageFactory.create(accountRegisterView.getContext(), e));
+    private void register(final AccountRegistrationRequest request) {
+        if (irohaRepository == null) {
+            accountRegisterView.hideProgress();
+            accountRegisterView.showError(accountRegisterView.getContext().getString(R.string.error_message_retry_again));
             return;
         }
 
-        accountRegisterView.registerSuccessful(result.uuid);
+        CompletableFuture<AccountProfile> future = irohaRepository.registerAccount(request);
+        future.thenAccept(profile -> mainHandler.post(() -> registerSuccessful(profile)))
+                .exceptionally(throwable -> {
+                    mainHandler.post(() -> registerFailure(throwable.getCause() != null ? throwable.getCause() : throwable));
+                    return null;
+                });
+    }
+
+    private void registerSuccessful(AccountProfile profile) {
+        accountRegisterView.hideProgress();
+        accountRegisterView.registerSuccessful(profile);
     }
 
     private void registerFailure(Throwable throwable) {
         accountRegisterView.hideProgress();
-
-        KeyPair.delete(accountRegisterView.getContext());
-
-        Context c = accountRegisterView.getContext();
-        if (NetworkUtil.isOnline(c)) {
-            Crashlytics.log(Log.ERROR, AccountRegisterPresenter.TAG, throwable.getMessage());
-            accountRegisterView.showError(ErrorMessageFactory.create(c, throwable));
-        } else {
-            accountRegisterView.showError(ErrorMessageFactory.create(c, new NetworkNotConnectedException()));
-        }
+        Log.e(TAG, "registerFailure: ", throwable);
+        CrashReporter.logError(TAG, "Registration failed", throwable);
+        accountRegisterView.showError(
+                ErrorMessageFactory.create(accountRegisterView.getContext(), throwable));
     }
 }

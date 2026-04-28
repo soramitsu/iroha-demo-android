@@ -17,6 +17,9 @@ bin/
 gen/
 out/
 
+# Local Gradle cache used for sandboxed builds
+.gradle-local/
+
 # Gradle files
 .gradle/
 build/

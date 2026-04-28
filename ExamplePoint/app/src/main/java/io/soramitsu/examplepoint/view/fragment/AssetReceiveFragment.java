@@ -1,98 +1,99 @@
-/*
-Copyright Soramitsu Co., Ltd. 2016 All Rights Reserved.
-http://soramitsu.co.jp
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-         http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
-
 package io.soramitsu.examplepoint.view.fragment;
 
+import android.content.ClipData;
+import android.content.ClipboardManager;
 import android.content.Context;
-import android.content.DialogInterface;
-import android.databinding.DataBindingUtil;
-import android.graphics.Bitmap;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
-import android.support.v4.app.Fragment;
-import android.support.v7.app.AlertDialog;
+import android.widget.Toast;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Toast;
+import android.graphics.Bitmap;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
+import androidx.fragment.app.Fragment;
+
+import java.util.List;
 
 import io.soramitsu.examplepoint.R;
 import io.soramitsu.examplepoint.databinding.FragmentAssetReceiveBinding;
 import io.soramitsu.examplepoint.navigator.Navigator;
 import io.soramitsu.examplepoint.presenter.AssetReceivePresenter;
+import io.soramitsu.examplepoint.sdk.model.AccountAsset;
+import io.soramitsu.examplepoint.sdk.model.AccountShareInfo;
 import io.soramitsu.examplepoint.view.AssetReceiveView;
 import io.soramitsu.examplepoint.view.activity.MainActivity;
-import io.soramitsu.irohaandroid.exception.UserNotFoundException;
-import io.soramitsu.irohaandroid.model.Account;
-import io.soramitsu.irohaandroid.model.KeyPair;
 
 public class AssetReceiveFragment extends Fragment implements AssetReceiveView, MainActivity.MainActivityListener {
+
     public static final String TAG = AssetReceiveFragment.class.getSimpleName();
 
-    private static final String ARG_ASSET_RECEIVE_KEY_UUID = "uuid";
-
-    private AssetReceivePresenter assetReceivePresenter = new AssetReceivePresenter();
-
     private FragmentAssetReceiveBinding binding;
+    private AssetReceivePresenter presenter;
+    private String lastAccountId;
+    private String lastIdentityStatement;
 
-    private String hasAssetValue;
-
-    public static AssetReceiveFragment newInstance(String uuid) {
-        AssetReceiveFragment fragment = new AssetReceiveFragment();
-        Bundle args = new Bundle();
-        args.putString(ARG_ASSET_RECEIVE_KEY_UUID, uuid);
-        fragment.setArguments(args);
-        return fragment;
+    public static AssetReceiveFragment newInstance() {
+        return new AssetReceiveFragment();
     }
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        assetReceivePresenter.setView(this);
-        assetReceivePresenter.setUuid(getArguments().getString(ARG_ASSET_RECEIVE_KEY_UUID));
-        assetReceivePresenter.onCreate();
+        presenter = new AssetReceivePresenter(requireContext());
+        presenter.setView(this);
+        presenter.onCreate();
+    }
+
+    @Nullable
+    @Override
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        binding = FragmentAssetReceiveBinding.inflate(inflater, container, false);
+        binding.swipeRefresh.setColorSchemeResources(
+                R.color.red600,
+                R.color.green600,
+                R.color.blue600,
+                R.color.orange600
+        );
+        binding.swipeRefresh.setOnRefreshListener(presenter::onPullToRefresh);
+        binding.copyAccountId.setOnClickListener(v -> copyToClipboard(lastAccountId, getString(R.string.receive_clipboard_account_id)));
+        binding.copyAlias.setVisibility(View.GONE);
+        binding.copyIas.setOnClickListener(v -> copyToClipboard(lastIdentityStatement, getString(R.string.receive_clipboard_ias)));
+        return binding.getRoot();
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.fragment_asset_receive, container, false);
-    }
-
-    @Override
-    public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        binding = DataBindingUtil.bind(view);
-        binding.swipeRefresh.setColorSchemeResources(R.color.red600, R.color.green600, R.color.blue600, R.color.orange600);
-        binding.swipeRefresh.setOnRefreshListener(assetReceivePresenter.onSwipeRefresh());
-        binding.receiverAmount.addTextChangedListener(assetReceivePresenter.textWatcher());
-        binding.publicKey.setOnClickListener(assetReceivePresenter.onPublicKeyTextClicked());
     }
 
     @Override
     public void onStart() {
         super.onStart();
-        assetReceivePresenter.onStart();
+        presenter.onStart();
     }
 
     @Override
     public void onStop() {
-        assetReceivePresenter.onStop();
+        presenter.onStop();
         super.onStop();
+    }
+
+    @Override
+    public Context getContext() {
+        return requireContext();
+    }
+
+    @Override
+    public void showProgress() {
+        binding.progressBar.setVisibility(View.VISIBLE);
+    }
+
+    @Override
+    public void hideProgress() {
+        binding.progressBar.setVisibility(View.GONE);
     }
 
     @Override
@@ -101,89 +102,75 @@ public class AssetReceiveFragment extends Fragment implements AssetReceiveView, 
     }
 
     @Override
-    public void setRefreshing(final boolean refreshing) {
+    public void setRefreshing(boolean refreshing) {
         binding.swipeRefresh.setRefreshing(refreshing);
     }
 
     @Override
-    public void showError(String error, Throwable throwable) {
-        if (throwable instanceof UserNotFoundException) {
-            new AlertDialog.Builder(getActivity())
-                    .setMessage(R.string.error_message_user_not_found)
-                    .setNeutralButton(R.string.refresh, new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialogInterface, int i) {
-                            dialogInterface.dismiss();
-                            assetReceivePresenter.onSwipeRefresh().onRefresh();
-                        }
-                    })
-                    .setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialogInterface, int i) {
-                            dialogInterface.dismiss();
-                        }
-                    })
-                    .setPositiveButton(R.string.reregistration, new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialogInterface, int i) {
-                            dialogInterface.dismiss();
-                            Context c = getContext();
-                            KeyPair.delete(c);
-                            Account.delete(c);
-                            Navigator.getInstance().navigateToRegisterActivity(c);
-                            getActivity().finish();
-                        }
-                    })
-                    .setCancelable(true)
-                    .create().show();
+    public void showError(String error) {
+        Toast.makeText(requireContext(), error, Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void renderShareInfo(AccountShareInfo info) {
+        binding.accountName.setText(info.getDisplayName());
+        binding.accountId.setText(getString(R.string.wallet_account_label, info.getAccountId()));
+        if (info.getIdentityStatement() == null || info.getIdentityStatement().isEmpty()) {
+            binding.accountIas.setText(R.string.receive_ias_unknown);
+            lastIdentityStatement = null;
         } else {
-            Toast.makeText(getContext(), error, Toast.LENGTH_SHORT).show();
+            binding.accountIas.setText(info.getIdentityStatement());
+            lastIdentityStatement = info.getIdentityStatement();
+        }
+        binding.accountIdValue.setText(info.getAccountId());
+        binding.aliasValue.setText(R.string.receive_alias_unavailable);
+        binding.aliasWarning.setText(R.string.receive_alias_warning);
+        lastAccountId = info.getAccountId();
+    }
+
+    @Override
+    public void renderAssets(List<AccountAsset> assets) {
+        if (assets == null || assets.isEmpty()) {
+            binding.pocketMoney.setText(R.string.wallet_empty_balance);
+        } else {
+            binding.pocketMoney.setText(assets.get(0).getQuantity());
         }
     }
 
     @Override
-    public String getAmount() {
-        return binding.receiverAmount.getText().toString();
+    public void showQr(Bitmap qrBitmap) {
+        binding.qrCode.setImageBitmap(qrBitmap);
     }
 
     @Override
-    public void setAmount(String amount) {
-        binding.receiverAmount.setText(amount);
+    public void promptReRegistration() {
+        new AlertDialog.Builder(requireContext())
+                .setMessage(R.string.error_message_user_not_found)
+                .setPositiveButton(R.string.register, (dialog, which) -> {
+                    Navigator.getInstance().navigateToRegisterActivity(requireContext());
+                    if (getActivity() != null) {
+                        getActivity().finish();
+                    }
+                })
+                .setNegativeButton(android.R.string.cancel, null)
+                .show();
     }
 
-    @Override
-    public String getPublicKey() {
-        return binding.publicKey.getText().toString();
-    }
-
-    @Override
-    public void setPublicKey(String publicKey) {
-        binding.publicKey.setText(publicKey);
-    }
-
-    @Override
-    public void invalidate() {
-        binding.qrCode.invalidate();
-    }
-
-    @Override
-    public void setQR(Bitmap qr) {
-        binding.qrCode.setImageBitmap(qr);
-    }
-
-    @Override
-    public String getHasAssetValue() {
-        return hasAssetValue;
-    }
-
-    @Override
-    public void setHasAssetValue(String value) {
-        hasAssetValue = value;
-        binding.pocketMoney.setText(getString(R.string.has_asset_amount, hasAssetValue));
+    private void copyToClipboard(String value, String label) {
+        if (value == null || value.isEmpty()) {
+            showError(getString(R.string.error_message_receiver_required));
+            return;
+        }
+        ClipboardManager manager = (ClipboardManager) requireContext().getSystemService(Context.CLIPBOARD_SERVICE);
+        if (manager != null) {
+            ClipData data = ClipData.newPlainText(label, value);
+            manager.setPrimaryClip(data);
+            Toast.makeText(requireContext(), R.string.message_copy_to_clipboard, Toast.LENGTH_SHORT).show();
+        }
     }
 
     @Override
     public void onNavigationItemClicked() {
-        // nothing
+        // no-op
     }
 }

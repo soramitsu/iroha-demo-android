@@ -1,65 +1,33 @@
-/*
-Copyright Soramitsu Co., Ltd. 2016 All Rights Reserved.
-http://soramitsu.co.jp
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-         http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
-
 package io.soramitsu.examplepoint.presenter;
 
 import android.content.Context;
 import android.os.Handler;
-import android.support.annotation.NonNull;
-import android.support.v4.widget.SwipeRefreshLayout;
-import android.util.Log;
-import android.view.View;
-import android.widget.AbsListView;
+import android.os.Looper;
 
-import com.crashlytics.android.Crashlytics;
+import androidx.annotation.NonNull;
 
-import java.io.IOException;
-import java.security.InvalidKeyException;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.UnrecoverableKeyException;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
-import javax.crypto.NoSuchPaddingException;
-
+import io.soramitsu.examplepoint.data.AccountProfile;
 import io.soramitsu.examplepoint.exception.ErrorMessageFactory;
-import io.soramitsu.examplepoint.exception.NetworkNotConnectedException;
-import io.soramitsu.examplepoint.model.TransactionHistory;
-import io.soramitsu.examplepoint.util.NetworkUtil;
+import io.soramitsu.examplepoint.sdk.IrohaRepository;
+import io.soramitsu.examplepoint.sdk.model.AccountAsset;
+import io.soramitsu.examplepoint.sdk.model.AccountTransaction;
 import io.soramitsu.examplepoint.view.WalletView;
-import io.soramitsu.examplepoint.view.fragment.WalletFragment;
-import io.soramitsu.irohaandroid.Iroha;
-import io.soramitsu.irohaandroid.callback.Callback;
-import io.soramitsu.irohaandroid.callback.Func2;
-import io.soramitsu.irohaandroid.model.Account;
-import io.soramitsu.irohaandroid.model.Transaction;
 
 public class WalletPresenter implements Presenter<WalletView> {
-    public static final String TAG = WalletPresenter.class.getSimpleName();
 
-    private static final String IROHA_TASK_TAG_USER_INFO_ON_WALLET = "UserInfoOnWallet";
-    private static final String IROHA_TASK_TAG_TRANSACTION = "Transaction";
+    private static final int DEFAULT_HISTORY_LIMIT = 25;
+
+    private final IrohaRepository repository;
+    private final Handler mainHandler = new Handler(Looper.getMainLooper());
 
     private WalletView walletView;
 
-    private Handler refreshHandler;
-    private Runnable transactionRunnable;
-
-    private String uuid;
+    public WalletPresenter(@NonNull Context context) {
+        this.repository = new IrohaRepository(context.getApplicationContext());
+    }
 
     @Override
     public void setView(@NonNull WalletView view) {
@@ -68,210 +36,77 @@ public class WalletPresenter implements Presenter<WalletView> {
 
     @Override
     public void onCreate() {
-        // nothing
+        // no-op
     }
 
     @Override
     public void onStart() {
-        refreshHandler = new Handler();
-        transactionRunnable = new Runnable() {
-            @Override
-            public void run() {
-                transactionHistory(WalletFragment.RefreshState.SWIPE_UP);
-            }
-        };
+        refreshWallet();
     }
 
     @Override
     public void onResume() {
-        // nothing
+        // no-op
     }
 
     @Override
     public void onPause() {
-        if (walletView.isRefreshing()) {
-            refreshHandler.removeCallbacks(transactionRunnable);
-            walletView.setRefreshing(false);
-            walletView.setRefreshEnable(true);
-        }
+        // no-op
     }
 
     @Override
     public void onStop() {
-        Iroha iroha = Iroha.getInstance();
-        iroha.cancelAsyncTask(IROHA_TASK_TAG_USER_INFO_ON_WALLET);
-        iroha.cancelAsyncTask(IROHA_TASK_TAG_TRANSACTION);
+        // no-op
     }
 
     @Override
     public void onDestroy() {
-        // nothing
+        // no-op
     }
 
-    public void setUuid(String uuid) {
-        this.uuid = uuid;
+    public void onPullToRefresh() {
+        refreshWallet();
     }
 
-    public void transactionHistory(final WalletFragment.RefreshState state) {
-        switch (state) {
-            case RE_CREATED_FRAGMENT:
-                if (walletView.getTransaction() == null) {
-                    renderFromNetwork(state);
-                    return;
-                }
-
-                renderFromMemory();
-                break;
-            case EMPTY_REFRESH:
-            case SWIPE_UP:
-                renderFromNetwork(state);
-                break;
-        }
-    }
-
-    private void renderFromMemory() {
-        Log.d(TAG, "transactionHistory: cache in memory");
-        walletView.renderTransactionHistory(walletView.getTransaction());
-    }
-
-    private void renderFromNetwork(WalletFragment.RefreshState state) {
-        Log.d(TAG, "transactionHistory: fetch network or cache");
-
-        switch (state) {
-            case RE_CREATED_FRAGMENT:
-            case SWIPE_UP:
-                break;
-            case EMPTY_REFRESH:
-                walletView.showProgress();
-                break;
-        }
-
-        if (uuid == null || uuid.isEmpty()) {
-            uuid = getUuid();
-        }
-
-        Iroha iroha = Iroha.getInstance();
-        iroha.runParallelAsyncTask(
-                walletView.getActivity(),
-                IROHA_TASK_TAG_USER_INFO_ON_WALLET,
-                iroha.findAccountFunction(uuid),
-                IROHA_TASK_TAG_TRANSACTION,
-                iroha.findTransactionHistoryFunction(uuid, 30, 0),
-                collectFunc(),
-                callback()
-        );
-    }
-
-    private Func2<Account, List<Transaction>, TransactionHistory> collectFunc() {
-        return new Func2<Account, List<Transaction>, TransactionHistory>() {
-            @Override
-            public TransactionHistory call(Account account, List<Transaction> transactions) {
-                TransactionHistory transactionHistory = new TransactionHistory();
-                if (account != null && account.assets != null && !account.assets.isEmpty()) {
-                    transactionHistory.value = account.assets.get(0).value;
-                }
-                transactionHistory.histories = transactions;
-                return transactionHistory;
-            }
-        };
-    }
-
-    private Callback<TransactionHistory> callback() {
-        return new Callback<TransactionHistory>() {
-            @Override
-            public void onSuccessful(TransactionHistory result) {
-                if (walletView.isRefreshing()) {
-                    walletView.setRefreshing(false);
-                }
-
-                walletView.hideProgress();
-
-                walletView.renderTransactionHistory(result);
-            }
-
-            @Override
-            public void onFailure(Throwable throwable) {
-                fail(throwable);
-            }
-        };
-    }
-
-    private void fail(Throwable throwable) {
-        if (walletView.isRefreshing()) {
+    private void refreshWallet() {
+        if (!repository.hasAccountProfile()) {
             walletView.setRefreshing(false);
+            walletView.promptReRegistration();
+            return;
         }
 
+        walletView.showProgress();
+        final AccountProfile profile = repository.getAccountProfile();
+        CompletableFuture<List<AccountAsset>> assetsFuture = repository.fetchAccountAssets();
+        CompletableFuture<List<AccountTransaction>> transactionsFuture =
+                repository.fetchAccountTransactions(DEFAULT_HISTORY_LIMIT);
+        CompletableFuture<Void> combined = CompletableFuture.allOf(assetsFuture, transactionsFuture);
+        combined.thenRun(() -> mainHandler.post(() -> {
+            renderWallet(
+                    profile,
+                    assetsFuture.join(),
+                    transactionsFuture.join(),
+                    System.currentTimeMillis());
+        }))
+                .exceptionally(throwable -> {
+                    Throwable cause = throwable.getCause() != null ? throwable.getCause() : throwable;
+                    mainHandler.post(() -> handleError(cause));
+                    return null;
+                });
+    }
+
+    private void renderWallet(AccountProfile profile,
+                              List<AccountAsset> assets,
+                              List<AccountTransaction> transactions,
+                              long timestampMs) {
         walletView.hideProgress();
-
-        final Context context = walletView.getContext();
-        if (NetworkUtil.isOnline(walletView.getContext())) {
-            Crashlytics.log(Log.ERROR, WalletPresenter.TAG, throwable.getMessage());
-            walletView.showError(ErrorMessageFactory.create(context, throwable), throwable);
-        } else {
-            walletView.showError(ErrorMessageFactory.create(context, new NetworkNotConnectedException()), throwable);
-        }
+        walletView.setRefreshing(false);
+        walletView.renderWallet(profile, assets, transactions, timestampMs);
     }
 
-    public SwipeRefreshLayout.OnRefreshListener onSwipeRefresh() {
-        return new SwipeRefreshLayout.OnRefreshListener() {
-            @Override
-            public void onRefresh() {
-                refreshHandler.postDelayed(transactionRunnable, 1500);
-            }
-        };
-    }
-
-    public View.OnClickListener onRefresh() {
-        return new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                transactionHistory(WalletFragment.RefreshState.EMPTY_REFRESH);
-            }
-        };
-    }
-
-    public AbsListView.OnScrollListener onTransactionListScroll() {
-        return new AbsListView.OnScrollListener() {
-            @Override
-            public void onScrollStateChanged(AbsListView view, int scrollState) {
-                // nothing
-            }
-
-            @Override
-            public void onScroll(AbsListView view, int firstVisibleItem,
-                                 int visibleItemCount, int totalItemCount) {
-                if (walletView.isRefreshing()) {
-                    return;
-                }
-
-                if (view.getChildCount() == 0) {
-                    walletView.setRefreshEnable(true);
-                    return;
-                }
-
-                boolean enable = false;
-                if (view.getChildCount() > 0) {
-                    boolean firstItemVisible = view.getChildCount() == 0;
-                    boolean topOfFirstItemVisible = view.getFirstVisiblePosition() == 0
-                            && view.getChildAt(0).getTop() == view.getPaddingTop();
-                    enable = firstItemVisible || topOfFirstItemVisible;
-                }
-                walletView.setRefreshEnable(enable);
-            }
-        };
-    }
-
-    private String getUuid() {
-        final Context context = walletView.getContext();
-        final String uuid;
-        try {
-            uuid = Account.getUuid(context);
-        } catch (NoSuchPaddingException | UnrecoverableKeyException | NoSuchAlgorithmException
-                | KeyStoreException | InvalidKeyException | IOException e) {
-            Crashlytics.log(Log.ERROR, AssetSenderPresenter.TAG, e.getMessage());
-            walletView.showError(ErrorMessageFactory.create(context, e), e);
-            return null;
-        }
-        return uuid;
+    private void handleError(Throwable throwable) {
+        walletView.hideProgress();
+        walletView.setRefreshing(false);
+        walletView.showError(ErrorMessageFactory.create(walletView.getContext(), throwable));
     }
 }

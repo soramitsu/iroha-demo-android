@@ -10,9 +10,25 @@
             android:icon="@drawable/tab_wallet"
             android:title="@string/wallet" />
         <item
+            android:id="@+id/action_subscriptions"
+            android:icon="@drawable/ic_home_white_24dp"
+            android:title="@string/subscriptions" />
+        <item
+            android:id="@+id/action_offline"
+            android:icon="@drawable/tab_offline"
+            android:title="@string/offline" />
+        <item
             android:id="@+id/action_sender"
             android:icon="@drawable/tab_send"
             android:title="@string/send" />
+        <item
+            android:id="@+id/action_switch_account"
+            android:icon="@drawable/ic_switch_account_white_24dp"
+            android:title="@string/switch_account" />
+        <item
+            android:id="@+id/action_add_account"
+            android:icon="@drawable/ic_add_account_white_24dp"
+            android:title="@string/add_account" />
         <item
             android:id="@+id/action_unregister"
             android:icon="@drawable/ic_exit_to_app_white_24dp"

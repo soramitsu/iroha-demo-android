@@ -4,7 +4,7 @@
     android:id="@+id/drawer_header_layout"
     android:layout_width="match_parent"
     android:layout_height="150dp"
-    android:background="@color/colorPrimaryDark">
+    android:background="@drawable/bg_wallet_card">
 
     <de.hdodenhof.circleimageview.CircleImageView
         android:id="@+id/icon"

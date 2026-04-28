@@ -1,79 +1,113 @@
-buildscript {
-    repositories {
-        maven { url 'https://maven.fabric.io/public' }
-    }
-
-    dependencies {
-        classpath 'io.fabric.tools:gradle:1.+'
-    }
+plugins {
+    id 'com.android.application'
 }
-apply plugin: 'com.android.application'
-apply plugin: 'io.fabric'
 
-repositories {
-    maven { url 'https://maven.fabric.io/public' }
-}
+def versions = [
+        appcompat            : '1.6.1',
+        core                 : '1.13.1',
+        material             : '1.12.0',
+        lifecycleViewModel   : '2.8.4',
+        cardview             : '1.0.0',
+        gridlayout           : '1.0.0',
+        drawerlayout         : '1.1.1',
+        swiperefreshlayout   : '1.1.0',
+        circleImageView      : '3.1.0',
+        aboutLibraries       : '5.9.1',
+        gson                 : '2.10.1',
+        jetbrainsAnnotations : '24.0.1',
+        securityCrypto       : '1.1.0-alpha06',
+        junit                : '4.13.2',
+        orgJson              : '20231013',
+        androidxTestExt      : '1.1.5',
+        espresso             : '3.5.1',
+        androidxTestRunner   : '1.5.2'
+]
+
+def toriiBaseUrl = project.findProperty("toriiBaseUrl") ?: "https://point-demo.iroha.tech"
+def toriiChainId = project.findProperty("toriiChainId") ?: "00000000-0000-0000-0000-000000000000"
+def toriiDomain = project.findProperty("toriiDomain") ?: "wonderland"
+def toriiAssetId = project.findProperty("toriiDefaultAssetId") ?: "point#wonderland"
+def toriiAdminAccountId = project.findProperty("toriiAdminAccountId") ?: ""
+def toriiAdminPrivateKey = project.findProperty("toriiAdminPrivateKey") ?: ""
+def toriiI105Discriminant = (project.findProperty("toriiI105Discriminant") ?: "753") as String
 
 android {
-    apply from: './debug.gradle', to: android
-    apply from: './release.gradle', to: android
+    namespace 'io.soramitsu.examplepoint'
+    compileSdk 35
 
-    compileSdkVersion 25
-    buildToolsVersion "25.0.2"
     defaultConfig {
         applicationId "io.soramitsu.examplepoint"
-        minSdkVersion 19
-        targetSdkVersion 25
-        versionCode 8
-        versionName "1.1.0"
-        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        minSdk 24
+        targetSdk 35
+        versionCode 9
+        versionName "1.2.0"
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        buildConfigField "String", "TORII_BASE_URL", "\"${toriiBaseUrl}\""
+        buildConfigField "String", "TORII_CHAIN_ID", "\"${toriiChainId}\""
+        buildConfigField "String", "TORII_DOMAIN", "\"${toriiDomain}\""
+        buildConfigField "String", "TORII_DEFAULT_ASSET_ID", "\"${toriiAssetId}\""
+        buildConfigField "String", "TORII_ADMIN_ACCOUNT_ID", "\"${toriiAdminAccountId}\""
+        buildConfigField "String", "TORII_ADMIN_PRIVATE_KEY", "\"${toriiAdminPrivateKey}\""
+        buildConfigField "int", "TORII_I105_DISCRIMINANT", toriiI105Discriminant
     }
+
     buildTypes {
         debug {
-            minifyEnabled true
+            minifyEnabled false
             testCoverageEnabled true
-
-            manifestPlaceholders = buildTypes.debug.manifestPlaceholders
-
-            applicationIdSuffix = '.debug'
-            versionNameSuffix = 'd'
+            applicationIdSuffix ".debug"
+            versionNameSuffix "-debug"
         }
         release {
             minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
-
-            manifestPlaceholders = buildTypes.release.manifestPlaceholders
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
-    dataBinding {
-        enabled true
-    }
-}
 
-ext {
-    supportLibVersion = '25.3.1'
-    circleImageViewVersion = '2.1.0'
-    irohaAndroidVersion = '1.2.6'
-    espressoVersion = '2.2.2'
-    junitVersion = '4.12'
+    buildFeatures {
+        dataBinding true
+        buildConfig true
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
+    packaging {
+        resources {
+            excludes += ["/META-INF/{AL2.0,LGPL2.1}"]
+        }
+    }
 }
 
 dependencies {
-    compile "com.android.support:appcompat-v7:$supportLibVersion"
-    compile "com.android.support:support-v4:$supportLibVersion"
-    compile "com.android.support:design:$supportLibVersion"
-    compile "com.android.support:cardview-v7:$supportLibVersion"
-    compile "com.android.support:gridlayout-v7:$supportLibVersion"
-    compile "org.hyperledger:iroha-android:$irohaAndroidVersion"
-    compile "de.hdodenhof:circleimageview:$circleImageViewVersion"
-    compile 'com.mikepenz:aboutlibraries:5.9.1'
-    compile('com.crashlytics.sdk.android:crashlytics:2.6.5@aar') {
-        transitive = true;
+    implementation project(':iroha-sdk')
+    implementation "androidx.appcompat:appcompat:${versions.appcompat}"
+    implementation "androidx.core:core:${versions.core}"
+    implementation "com.google.android.material:material:${versions.material}"
+    implementation "androidx.lifecycle:lifecycle-viewmodel:${versions.lifecycleViewModel}"
+    implementation "androidx.cardview:cardview:${versions.cardview}"
+    implementation "androidx.gridlayout:gridlayout:${versions.gridlayout}"
+    implementation "androidx.drawerlayout:drawerlayout:${versions.drawerlayout}"
+    implementation "androidx.swiperefreshlayout:swiperefreshlayout:${versions.swiperefreshlayout}"
+    implementation "de.hdodenhof:circleimageview:${versions.circleImageView}"
+    implementation "com.mikepenz:aboutlibraries:${versions.aboutLibraries}"
+    implementation "com.google.code.gson:gson:${versions.gson}"
+    implementation "org.jetbrains:annotations:${versions.jetbrainsAnnotations}"
+    implementation "com.squareup.okhttp3:okhttp:4.12.0"
+    implementation "org.bouncycastle:bcprov-jdk18on:1.78.1"
+    implementation "androidx.security:security-crypto:${versions.securityCrypto}"
+    implementation "com.google.zxing:core:3.5.1"
+    implementation "com.journeyapps:zxing-android-embedded:4.3.0"
+
+    androidTestImplementation "androidx.test.ext:junit:${versions.androidxTestExt}"
+    androidTestImplementation "androidx.test:runner:${versions.androidxTestRunner}"
+    androidTestImplementation("androidx.test.espresso:espresso-core:${versions.espresso}") {
+        exclude group: 'androidx.annotation', module: 'annotation'
     }
 
-    androidTestCompile("com.android.support.test.espresso:espresso-core:$espressoVersion") {
-        exclude group: 'com.android.support', module: 'support-annotations'
-    }
-
-    testCompile "junit:junit:$junitVersion"
+    testImplementation "junit:junit:${versions.junit}"
+    testImplementation "org.json:json:${versions.orgJson}"
+    testImplementation "com.squareup.okhttp3:mockwebserver:4.12.0"
 }

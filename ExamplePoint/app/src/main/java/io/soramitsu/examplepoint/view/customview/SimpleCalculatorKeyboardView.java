@@ -17,15 +17,15 @@ limitations under the License.
 
 package io.soramitsu.examplepoint.view.customview;
 
-import android.annotation.TargetApi;
 import android.content.Context;
-import android.databinding.DataBindingUtil;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.GridLayout;
+
+import androidx.databinding.DataBindingUtil;
+import androidx.gridlayout.widget.GridLayout;
 
 import io.soramitsu.examplepoint.R;
 import io.soramitsu.examplepoint.databinding.ViewSimpleCalculatorKeyboardBinding;
@@ -52,14 +52,6 @@ public class SimpleCalculatorKeyboardView extends GridLayout {
 
     public SimpleCalculatorKeyboardView(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
-        if (!isInEditMode()) {
-            init(context);
-        }
-    }
-
-    @TargetApi(21)
-    public SimpleCalculatorKeyboardView(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes) {
-        super(context, attrs, defStyleAttr, defStyleRes);
         if (!isInEditMode()) {
             init(context);
         }

@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="24dp"
+    android:gravity="center_horizontal">
+
+    <TextView
+        android:id="@+id/connect_wallet_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textStyle="bold"
+        android:textSize="22sp"
+        android:textColor="@android:color/black"
+        android:text="@string/connect_wallet_title_text" />
+
+    <TextView
+        android:id="@+id/connect_wallet_details"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:textColor="@android:color/darker_gray"
+        android:text="@string/connect_wallet_details_placeholder" />
+
+    <TextView
+        android:id="@+id/connect_wallet_status"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="18dp"
+        android:text="@string/connect_wallet_status_waiting"
+        android:textColor="@android:color/black" />
+
+    <ProgressBar
+        android:id="@+id/connect_wallet_progress"
+        style="?android:attr/progressBarStyleLarge"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:visibility="invisible" />
+
+    <Button
+        android:id="@+id/connect_wallet_reject"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="28dp"
+        android:text="@string/connect_wallet_reject" />
+
+    <Button
+        android:id="@+id/connect_wallet_approve"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:text="@string/connect_wallet_approve" />
+
+</LinearLayout>
